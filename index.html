@@ -112,15 +112,7 @@
   .compass-label.s { bottom:10px; left:50%; transform:translateX(-50%); }
   .compass-label.e { right:12px; top:50%; transform:translateY(-50%); }
   .compass-label.w { left:12px; top:50%; transform:translateY(-50%); }
-  .compass-ticks { position:absolute; inset:0; }
-  .compass-tick {
-    position:absolute; top:50%; left:50%; font-size:10px; font-weight:700; color:var(--cyan-600);
-    width:24px; margin-left:-12px; height:14px; margin-top:-7px; text-align:center;
-  }
-  .compass-tick-mark {
-    position:absolute; top:50%; left:50%; width:2px; height:9px; background:var(--cyan-400); opacity:.6;
-    margin-left:-1px; transform-origin:50% 100%;
-  }
+  .live-heading { text-align:center; font-size:22px; font-weight:900; color:var(--cyan-800); direction:ltr; margin:6px 0 4px; }
   .qibla-needle {
     position:absolute; top:50%; left:50%; width:0; height:0;
     transform:translate(-50%,-100%) rotate(0deg); transform-origin:50% 100%; transition:transform .3s ease;
@@ -788,7 +780,6 @@
         <div id="qiblaResult" style="display:none;">
           <div class="compass-wrap">
             <div class="compass-ring">
-              <div class="compass-ticks" id="compassTicks"></div>
               <span class="compass-label n">N</span>
               <div class="qibla-needle" id="qiblaNeedle"></div>
               <div class="kaaba-dot">🕋</div>
@@ -796,6 +787,7 @@
           </div>
           <div class="qibla-degree" id="qiblaDegree"></div>
           <div class="qibla-distance" id="qiblaDistance"></div>
+          <div class="live-heading" id="liveHeadingText" style="display:none;"></div>
           <button class="btn-live" id="liveCompassBtn" onclick="enableLiveCompass()">🧭 تفعيل البوصلة الحية (تجريبي)</button>
           <p class="qibla-note">لو فعّلت البوصلة الحية: لِف بجسمك ببطء لحد ما يبقى السهم مشاور لفوق تمامًا، وده محتاج معايرة بوصلة جهازك عشان يبقى دقيق. ولو مش عايز تستخدمها، السهم بيوضّحلك أصلًا زاوية اتجاه القبلة من الشمال الجغرافي، وتقدر تستخدمها مع أي بوصلة تانية.</p>
         </div>
@@ -1530,18 +1522,9 @@ function locateQibla() {
     { enableHighAccuracy: true, timeout: 10000 }
   );
 }
-function populateCompassTicks() {
-  const ticks = document.getElementById('compassTicks');
-  if (!ticks || ticks.dataset.built) return;
-  ticks.dataset.built = '1';
-  let html = '';
-  for (let deg = 0; deg < 360; deg += 30) {
-    html += `<div class="compass-tick" style="transform:rotate(${deg}deg) translate(0,-92px) rotate(${-deg}deg);">${deg}°</div>`;
-  }
-  ticks.innerHTML = html;
-}
-
 function enableLiveCompass() {
+  let lastUpdate = 0;
+  const headingEl = document.getElementById('liveHeadingText');
   const handleOrientation = (event) => {
     let heading;
     if (typeof event.webkitCompassHeading === 'number') {
@@ -1554,6 +1537,17 @@ function enableLiveCompass() {
     if (qiblaBearingValue === null) return;
     const rotation = (qiblaBearingValue - heading + 360) % 360;
     document.getElementById('qiblaNeedle').style.transform = `translate(-50%,-100%) rotate(${rotation}deg)`;
+
+    // Throttle the text update (orientation events can fire many times a
+    // second) so the number stays readable instead of flickering.
+    const now = Date.now();
+    if (now - lastUpdate > 200) {
+      lastUpdate = now;
+      const rounded = Math.round(heading) % 360;
+      const aligned = rotation < 8 || rotation > 352;
+      headingEl.style.display = 'block';
+      headingEl.textContent = `${aligned ? '✅' : '🧭'} جهازك متجه الآن ناحية ${rounded}° ${aligned ? '— ده اتجاه القبلة بالظبط!' : ''}`;
+    }
   };
   const start = () => {
     window.addEventListener('deviceorientationabsolute', handleOrientation, true);
@@ -1573,7 +1567,6 @@ function enableLiveCompass() {
 document.getElementById('citySelect').value = getSavedGov();
 checkRamadanBanner();
 calcZakat();
-populateCompassTicks();
 
 /* Request notification permission as early as possible now that we're on a
    real site (this prompt is reliable here, unlike inside the old sandboxed
