@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>رفيقي اليومي</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
+
+  :root {
+    --teal-50:#E6F5F2; --teal-100:#C3E8E0; --teal-400:#2A9D8F; --teal-600:#1F7A6E; --teal-800:#145349; --teal-900:#0D3A33;
+    --gold-50:#FBF3E3; --gold-100:#F3DFAE; --gold-400:#D4A72C; --gold-600:#A9821D; --gold-800:#7A5E14;
+    --blue-50:#E8F0FB; --blue-100:#C2D9F5; --blue-400:#4A7FC9; --blue-600:#355E99; --blue-800:#23406B;
+    --purple-50:#F1EAF8; --purple-100:#DCC8EE; --purple-400:#8B5CC7; --purple-600:#6B3FA0; --purple-800:#4A2B70;
+    --green-50:#E9F6EA; --green-100:#C8E9CB; --green-400:#4CA559; --green-600:#38823F; --green-800:#255A2A;
+    --rose-50:#FBEAEE; --rose-100:#F2C9D3; --rose-400:#C9607D; --rose-600:#A34560; --rose-800:#732F42;
+    --indigo-50:#EAEBF7; --indigo-100:#CBCEEC; --indigo-400:#5B5FA8; --indigo-600:#43468A; --indigo-800:#2E3063;
+    --cyan-50:#E6F4F7; --cyan-100:#C0E3EB; --cyan-400:#2E9BB5; --cyan-600:#227A90; --cyan-800:#175768;
+    --cream:#FBF8F2; --ink:#2C3B38; --ink-soft:#5B6D69;
+    --radius:18px;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body{ width:100%; min-height:100%; font-family:'Tajawal',sans-serif; background:var(--cream); color:var(--ink); }
+  body {
+    background-image:
+      radial-gradient(circle at 10% 10%, rgba(42,157,143,0.06) 0, transparent 40%),
+      radial-gradient(circle at 90% 20%, rgba(212,167,44,0.07) 0, transparent 40%),
+      radial-gradient(circle at 50% 95%, rgba(42,157,143,0.05) 0, transparent 45%);
+  }
+  .app { max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
+
+  /* Top bar */
+  .topbar {
+    padding:22px 20px 16px; text-align:center; position:relative;
+  }
+  .topbar h1 { font-size:22px; font-weight:900; color:var(--teal-800); }
+  .topbar p { font-size:13px; color:var(--ink-soft); margin-top:4px; }
+
+  .back-btn {
+    position:absolute; right:18px; top:20px; width:38px; height:38px; border-radius:50%;
+    background:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    cursor:pointer; font-size:18px; color:var(--teal-700); border:none;
+  }
+
+  main { flex:1; padding:4px 18px 100px; }
+
+  /* Screens */
+  .screen { display:none; animation:fadeIn .25s ease; }
+  .screen.active { display:block; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  /* Home grid */
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:10px; }
+  .card {
+    background:#fff; border-radius:var(--radius); padding:22px 14px; text-align:center;
+    box-shadow:0 4px 16px rgba(20,83,73,0.07); cursor:pointer; transition:transform .15s;
+    border:1px solid rgba(0,0,0,0.03);
+  }
+  .card:active { transform:scale(0.96); }
+  .card .icon-wrap {
+    width:56px; height:56px; border-radius:16px; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:26px;
+  }
+  .card h3 { font-size:14.5px; font-weight:700; margin-bottom:3px; }
+  .card p { font-size:11px; color:var(--ink-soft); line-height:1.4; }
+
+  .card.prayer .icon-wrap { background:var(--teal-50); }
+  .card.zakat .icon-wrap { background:var(--gold-50); }
+  .card.installment .icon-wrap { background:var(--blue-50); }
+  .card.ai .icon-wrap { background:var(--purple-50); }
+  .card.tasbih .icon-wrap { background:var(--green-50); }
+  .card.adhkar .icon-wrap { background:var(--rose-50); }
+  .card.calendar .icon-wrap { background:var(--indigo-50); }
+  .card.qibla .icon-wrap { background:var(--cyan-50); }
+
+  /* Ramadan banner — deliberately placed first, large and animated so it draws the eye immediately */
+  .ramadan-banner {
+    position:relative; overflow:hidden; margin-bottom:20px; text-align:center;
+    background:linear-gradient(160deg,var(--indigo-800) 0%, var(--purple-800) 55%, var(--indigo-600) 100%);
+    border-radius:22px; padding:26px 20px 22px; color:#fff;
+    border:1.5px solid rgba(255,215,130,0.35);
+    box-shadow:0 10px 32px rgba(46,43,99,0.3), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    animation:ramadanPulse 3s ease-in-out infinite;
+  }
+  @keyframes ramadanPulse {
+    0%,100% { box-shadow:0 10px 32px rgba(46,43,99,0.3), 0 0 0 1px rgba(255,255,255,0.04) inset; }
+    50% { box-shadow:0 10px 40px rgba(212,167,44,0.35), 0 0 0 1px rgba(255,255,255,0.06) inset; }
+  }
+  .rb-glow {
+    position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(circle at 20% 15%, rgba(255,215,130,0.25), transparent 45%),
+               radial-gradient(circle at 85% 80%, rgba(255,215,130,0.18), transparent 50%);
+  }
+  .rb-icon { font-size:38px; margin-bottom:6px; animation:rbSway 2.4s ease-in-out infinite; }
+  @keyframes rbSway { 0%,100% { transform:rotate(-6deg); } 50% { transform:rotate(6deg); } }
+  .ramadan-banner .rb-title { font-size:21px; font-weight:900; letter-spacing:.5px; color:#FFE8A8; }
+  .ramadan-banner .rb-sub { font-size:12px; opacity:.85; margin-top:4px; margin-bottom:16px; }
+  .rb-times { background:rgba(255,255,255,0.08); border-radius:14px; padding:4px 16px; }
+  .ramadan-banner .rb-row { display:flex; justify-content:space-between; align-items:center; font-size:13.5px; font-weight:600; padding:10px 0; border-top:1px solid rgba(255,255,255,0.15); }
+  .ramadan-banner .rb-row:first-child { border-top:none; }
+  .ramadan-banner .rb-row span:last-child { font-weight:900; direction:ltr; font-size:16px; color:#FFE8A8; }
+
+  /* Qibla compass */
+  .btn-cyan { background:linear-gradient(135deg,var(--cyan-400),var(--cyan-600)); }
+  .compass-wrap { display:flex; justify-content:center; margin:22px 0 14px; }
+  .compass-ring {
+    width:220px; height:220px; border-radius:50%; position:relative;
+    background:radial-gradient(circle at 35% 30%, var(--cyan-50), #fff);
+    border:6px solid var(--cyan-400); box-shadow:0 8px 24px rgba(23,87,104,0.15);
+  }
+  .compass-label { position:absolute; font-size:13px; font-weight:800; color:var(--cyan-800); }
+  .compass-label.n { top:10px; left:50%; transform:translateX(-50%); }
+  .compass-label.s { bottom:10px; left:50%; transform:translateX(-50%); }
+  .compass-label.e { right:12px; top:50%; transform:translateY(-50%); }
+  .compass-label.w { left:12px; top:50%; transform:translateY(-50%); }
+  .qibla-needle {
+    position:absolute; top:50%; left:50%; width:0; height:0;
+    transform:translate(-50%,-100%) rotate(0deg); transform-origin:50% 100%; transition:transform .3s ease;
+  }
+  .qibla-needle::before {
+    content:''; position:absolute; bottom:0; left:-7px; width:0; height:0;
+    border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:84px solid var(--cyan-600);
+  }
+  .kaaba-dot { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:22px; }
+  .qibla-degree { text-align:center; font-size:16px; font-weight:800; color:var(--cyan-800); margin-top:4px; }
+  .qibla-distance { text-align:center; font-size:12.5px; color:var(--ink-soft); margin-top:4px; margin-bottom:16px; }
+  .btn-live { width:100%; padding:13px; border:none; border-radius:14px; font-family:inherit; font-weight:700; font-size:13px; cursor:pointer; background:var(--cyan-50); color:var(--cyan-800); margin-bottom:12px; }
+  .qibla-note { font-size:10.5px; color:var(--ink-soft); line-height:1.7; text-align:center; }
+
+  /* Calendar */
+  .today-card {
+    background:linear-gradient(135deg,var(--indigo-400),var(--indigo-800)); border-radius:var(--radius);
+    padding:20px; color:#fff; text-align:center; margin-bottom:16px;
+  }
+  .today-card .g-date { font-size:13px; opacity:.85; margin-bottom:6px; }
+  .today-card .h-date { font-size:19px; font-weight:800; }
+  .cal-mode-toggle { display:flex; background:var(--indigo-50); border-radius:14px; padding:4px; margin-bottom:14px; }
+  .cal-mode-btn { flex:1; text-align:center; padding:9px; border-radius:11px; font-size:12.5px; font-weight:700; color:var(--indigo-800); cursor:pointer; }
+  .cal-mode-btn.active { background:var(--indigo-400); color:#fff; }
+  .cal-range-label { text-align:center; font-size:12px; color:var(--indigo-600); font-weight:700; margin-bottom:10px; }
+  .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .cal-nav button {
+    width:36px; height:36px; border-radius:50%; border:none; background:var(--indigo-50); color:var(--indigo-800);
+    font-size:16px; cursor:pointer;
+  }
+  .cal-nav .cal-month-label { font-size:14px; font-weight:800; color:var(--indigo-800); }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+  .cal-dow { text-align:center; font-size:10.5px; font-weight:700; color:var(--ink-soft); padding-bottom:4px; }
+  .cal-cell {
+    aspect-ratio:1; border-radius:10px; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    box-shadow:0 1px 4px rgba(46,48,99,0.06); font-size:11px;
+  }
+  .cal-cell.empty { background:transparent; box-shadow:none; }
+  .cal-cell.today { background:var(--indigo-400); color:#fff; }
+  .cal-cell .cell-primary { font-size:15px; font-weight:800; }
+  .cal-cell .cell-secondary { font-size:9px; opacity:.75; margin-top:2px; }
+  .cal-cell.today .cell-secondary { opacity:.9; }
+  .cal-note { font-size:10.5px; color:var(--ink-soft); line-height:1.7; margin-top:14px; text-align:center; }
+
+  .daily-tip {
+    margin-top:18px; background:linear-gradient(135deg,var(--teal-600),var(--teal-800));
+    border-radius:var(--radius); padding:18px 20px; color:#fff;
+  }
+  .daily-tip .label { font-size:11px; opacity:.8; margin-bottom:6px; }
+  .daily-tip .text { font-size:14px; line-height:1.7; font-weight:500; }
+
+  /* Section header style per theme */
+  .section-head { display:flex; align-items:center; gap:12px; margin:6px 0 20px; }
+  .section-head .badge {
+    width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;
+  }
+  .section-head h2 { font-size:18px; font-weight:800; }
+  .section-head .sub { font-size:12px; color:var(--ink-soft); margin-top:2px; }
+
+  .theme-teal .badge { background:var(--teal-50); }
+  .theme-teal h2 { color:var(--teal-800); }
+  .theme-gold .badge { background:var(--gold-50); }
+  .theme-gold h2 { color:var(--gold-800); }
+  .theme-blue .badge { background:var(--blue-50); }
+  .theme-blue h2 { color:var(--blue-800); }
+  .theme-purple .badge { background:var(--purple-50); }
+  .theme-purple h2 { color:var(--purple-800); }
+  .theme-green .badge { background:var(--green-50); }
+  .theme-green h2 { color:var(--green-800); }
+  .theme-rose .badge { background:var(--rose-50); }
+  .theme-rose h2 { color:var(--rose-800); }
+  .theme-indigo .badge { background:var(--indigo-50); }
+  .theme-indigo h2 { color:var(--indigo-800); }
+  .theme-cyan .badge { background:var(--cyan-50); }
+  .theme-cyan h2 { color:var(--cyan-800); }
+
+  .panel { background:#fff; border-radius:var(--radius); padding:20px; box-shadow:0 4px 16px rgba(20,83,73,0.06); margin-bottom:16px; }
+
+  /* Prayer times */
+  .city-select {
+    width:100%; padding:13px 16px; border-radius:14px; border:1.5px solid var(--teal-100);
+    font-family:inherit; font-size:14px; background:var(--teal-50); color:var(--teal-800); font-weight:600;
+  }
+  .prayer-list { margin-top:16px; display:flex; flex-direction:column; gap:10px; }
+  .prayer-row {
+    display:flex; justify-content:space-between; align-items:center; padding:14px 16px;
+    background:var(--teal-50); border-radius:14px;
+  }
+  .prayer-row.active { background:var(--teal-600); color:#fff; }
+  .prayer-row .name { display:flex; align-items:center; gap:10px; font-weight:700; font-size:14px; }
+  .prayer-row .time { font-size:16px; font-weight:800; direction:ltr; }
+  .next-prayer-banner {
+    text-align:center; padding:16px; background:var(--gold-50); border-radius:14px; margin-bottom:16px;
+    color:var(--gold-800); font-weight:700; font-size:13px;
+  }
+  .next-prayer-banner .countdown { font-size:20px; font-weight:900; direction:ltr; margin-top:4px; display:block; }
+
+  .reminder-toggle {
+    font-size:11.5px; font-weight:800; padding:5px 12px; border-radius:14px; cursor:pointer;
+    background:var(--teal-400); color:#fff;
+  }
+  .reminder-toggle.off { background:#E5E0D5; color:var(--ink-soft); }
+
+  .reminder-alert {
+    display:none; align-items:center; gap:10px; padding:14px 16px; border-radius:14px; margin-bottom:16px;
+    background:linear-gradient(135deg,var(--gold-400),var(--gold-600)); color:#fff; font-size:13px; font-weight:700;
+    animation:pulseGlow 1.6s ease-in-out infinite;
+  }
+  .reminder-alert.show { display:flex; }
+  @keyframes pulseGlow {
+    0%,100% { box-shadow:0 0 0 0 rgba(212,167,44,0.35); }
+    50% { box-shadow:0 0 0 10px rgba(212,167,44,0); }
+  }
+
+  /* Zakat */
+  .field-group { margin-bottom:16px; }
+  .field-group label { display:block; font-size:13px; font-weight:700; color:var(--ink-soft); margin-bottom:7px; }
+  .input-row { position:relative; }
+  input[type=number], input[type=text] {
+    width:100%; padding:13px 16px; border-radius:14px; border:1.5px solid #E5E0D5;
+    font-family:inherit; font-size:15px; font-weight:600; color:var(--ink); background:#FCFBF8;
+  }
+  input:focus { outline:none; border-color:var(--gold-400); }
+  .unit { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:12px; color:var(--ink-soft); }
+  .nisab-note { font-size:10.5px; color:var(--ink-soft); line-height:1.7; margin-top:7px; }
+  .theme-gold .input-row input:focus { border-color:var(--gold-400); }
+  .theme-blue .input-row input:focus { border-color:var(--blue-400); }
+
+  .btn {
+    width:100%; padding:15px; border:none; border-radius:14px; font-family:inherit; font-size:15px; font-weight:800;
+    color:#fff; cursor:pointer; margin-top:6px;
+  }
+  .btn-gold { background:linear-gradient(135deg,var(--gold-400),var(--gold-600)); }
+  .btn-blue { background:linear-gradient(135deg,var(--blue-400),var(--blue-600)); }
+  .btn-teal { background:linear-gradient(135deg,var(--teal-400),var(--teal-600)); }
+  .btn-purple { background:linear-gradient(135deg,var(--purple-400),var(--purple-600)); }
+  .btn:active { opacity:.85; }
+
+  .result-box {
+    margin-top:18px; padding:20px; border-radius:16px; text-align:center; display:none;
+  }
+  .result-box.show { display:block; animation:fadeIn .3s; }
+  .theme-gold .result-box { background:var(--gold-50); }
+  .theme-blue .result-box { background:var(--blue-50); }
+  .result-box .r-label { font-size:12px; color:var(--ink-soft); margin-bottom:6px; }
+  .result-box .r-value { font-size:30px; font-weight:900; direction:ltr; }
+  .theme-gold .result-box .r-value { color:var(--gold-800); }
+  .theme-blue .result-box .r-value { color:var(--blue-800); }
+  .result-box .r-note { font-size:12px; color:var(--ink-soft); margin-top:8px; line-height:1.6; }
+
+  .installment-breakdown { margin-top:14px; display:flex; flex-direction:column; gap:8px; }
+  .ib-row { display:flex; justify-content:space-between; font-size:13px; padding:4px 0; border-bottom:1px dashed #E5E0D5; }
+  .ib-row span:last-child { font-weight:700; direction:ltr; }
+
+  /* AI Assistant */
+  .ai-tabs { display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; }
+  .ai-tab {
+    flex-shrink:0; padding:9px 14px; border-radius:20px; background:var(--purple-50); color:var(--purple-800);
+    font-size:12.5px; font-weight:700; cursor:pointer; border:1.5px solid transparent;
+  }
+  .ai-tab.active { background:var(--purple-400); color:#fff; }
+
+  .paywall {
+    text-align:center; padding:30px 20px;
+  }
+  .paywall .lock-icon {
+    width:64px; height:64px; border-radius:50%; background:var(--purple-50); margin:0 auto 16px;
+    display:flex; align-items:center; justify-content:center; font-size:28px;
+  }
+  .paywall h3 { font-size:16px; font-weight:800; color:var(--purple-800); margin-bottom:8px; }
+  .paywall p { font-size:13px; color:var(--ink-soft); line-height:1.7; margin-bottom:18px; }
+  .price-tag {
+    display:inline-block; background:var(--purple-50); color:var(--purple-800); font-weight:800;
+    padding:8px 18px; border-radius:20px; font-size:14px; margin-bottom:18px;
+  }
+  .price-tag span { font-size:11px; font-weight:500; opacity:.8; }
+  .pay-methods { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; text-align:right; }
+  .pay-method {
+    display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:14px; background:#FBF9FD;
+    border:1.5px solid var(--purple-100); font-size:13px; font-weight:600; color:var(--ink); cursor:pointer;
+  }
+  .pay-method.active { border-color:var(--purple-400); background:var(--purple-50); }
+  .pm-icon { font-size:17px; }
+  .pay-note { font-size:10.5px; color:var(--ink-soft); line-height:1.7; margin-top:14px; margin-bottom:0; }
+
+  .chat-area { display:flex; flex-direction:column; gap:10px; min-height:200px; margin-bottom:14px; }
+  .msg { max-width:85%; padding:12px 15px; border-radius:16px; font-size:13.5px; line-height:1.7; }
+  .msg.bot { background:var(--purple-50); color:var(--ink); align-self:flex-start; border-bottom-right-radius:4px; }
+  .msg.user { background:var(--purple-400); color:#fff; align-self:flex-end; border-bottom-left-radius:4px; }
+  .chat-input-row { display:flex; gap:8px; }
+  .chat-input-row input {
+    flex:1; padding:13px 16px; border-radius:20px; border:1.5px solid var(--purple-100);
+    font-family:inherit; font-size:13.5px; background:#FBF9FD;
+  }
+  .send-btn {
+    width:46px; height:46px; border-radius:50%; border:none; background:var(--purple-400); color:#fff;
+    font-size:16px; cursor:pointer; flex-shrink:0;
+  }
+
+  .upload-box {
+    border:2px dashed var(--purple-100); border-radius:16px; padding:28px 16px; text-align:center; color:var(--ink-soft);
+    font-size:13px; margin-bottom:14px; cursor:pointer;
+  }
+  .upload-box .u-icon { font-size:28px; margin-bottom:8px; }
+
+  .expense-input { display:flex; gap:8px; margin-bottom:10px; }
+  .expense-input input:first-child { flex:2; }
+  .expense-input input:last-child { flex:1; }
+  .expense-list { display:flex; flex-direction:column; gap:6px; margin:14px 0; }
+  .expense-item { display:flex; justify-content:space-between; padding:10px 14px; background:var(--purple-50); border-radius:12px; font-size:13px; }
+  .expense-item span:last-child { font-weight:700; direction:ltr; }
+
+  /* Tasbih */
+  .dhikr-picker { display:flex; gap:8px; overflow-x:auto; margin-bottom:22px; }
+  .dhikr-chip {
+    flex-shrink:0; padding:9px 16px; border-radius:20px; background:var(--green-50); color:var(--green-800);
+    font-size:13px; font-weight:700; cursor:pointer; border:1.5px solid transparent;
+  }
+  .dhikr-chip.active { background:var(--green-400); color:#fff; }
+  .tasbih-circle {
+    width:210px; height:210px; border-radius:50%; margin:10px auto 22px; cursor:pointer; user-select:none;
+    background:radial-gradient(circle at 35% 30%, var(--green-100), var(--green-50));
+    border:6px solid var(--green-400); display:flex; flex-direction:column; align-items:center; justify-content:center;
+    box-shadow:0 8px 24px rgba(76,165,89,0.18); transition:transform .08s;
+  }
+  .tasbih-circle:active { transform:scale(0.96); }
+  .tasbih-circle .count { font-size:48px; font-weight:900; color:var(--green-800); direction:ltr; }
+  .tasbih-circle .label { font-size:13px; color:var(--green-600); font-weight:700; margin-top:4px; max-width:160px; text-align:center; }
+  .tasbih-circle .hint { font-size:10.5px; color:var(--green-600); opacity:.7; margin-top:10px; }
+  .tasbih-controls { display:flex; gap:10px; }
+  .tasbih-controls button {
+    flex:1; padding:13px; border:none; border-radius:14px; font-family:inherit; font-weight:800; font-size:13.5px; cursor:pointer;
+  }
+  .btn-reset { background:var(--rose-50); color:var(--rose-800); }
+  .btn-target { background:var(--green-50); color:var(--green-800); }
+  .target-row { display:flex; gap:8px; justify-content:center; margin-bottom:6px; }
+  .target-chip {
+    padding:6px 14px; border-radius:14px; background:#F2F0E9; color:var(--ink-soft); font-size:12px; font-weight:700; cursor:pointer;
+  }
+  .target-chip.active { background:var(--green-400); color:#fff; }
+
+  /* Adhkar */
+  .adhkar-tabs { display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; }
+  .adhkar-tab {
+    flex-shrink:0; padding:9px 14px; border-radius:20px; background:var(--rose-50); color:var(--rose-800);
+    font-size:12.5px; font-weight:700; cursor:pointer; border:1.5px solid transparent;
+  }
+  .adhkar-tab.active { background:var(--rose-400); color:#fff; }
+  .adhkar-item {
+    background:#fff; border-radius:16px; padding:16px 18px; margin-bottom:12px; box-shadow:0 3px 10px rgba(115,47,66,0.06);
+    border-right:4px solid var(--rose-400);
+  }
+  .adhkar-item .a-text { font-size:14.5px; line-height:2; color:var(--ink); font-weight:500; }
+  .adhkar-item .a-meta { display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+  .adhkar-item .a-count { font-size:11px; color:var(--rose-600); font-weight:700; background:var(--rose-50); padding:4px 10px; border-radius:10px; }
+  .adhkar-item .a-source { font-size:10.5px; color:var(--ink-soft); }
+  .last-read { font-size:11.5px; color:var(--rose-600); background:var(--rose-50); padding:8px 14px; border-radius:12px; margin-bottom:14px; text-align:center; font-weight:700; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px;
+    background:#fff; border-top:1px solid #EEE9DD; display:flex; padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+    box-shadow:0 -4px 20px rgba(0,0,0,0.04); z-index:30;
+  }
+  .nav-item {
+    flex:1; text-align:center; padding:6px 2px; cursor:pointer; color:var(--ink-soft); font-size:10.5px; font-weight:700;
+  }
+  .nav-item .n-icon { font-size:20px; display:block; margin-bottom:3px; }
+  .nav-item.active { color:var(--teal-600); }
+
+  ::-webkit-scrollbar { display:none; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar" id="topbar">
+    <h1 id="pageTitle">رفيقي اليومي</h1>
+    <p id="pageSub">كل ما تحتاجه في مكان واحد</p>
+  </div>
+
+  <main>
+
+    <!-- HOME -->
+    <section class="screen active" id="screen-home">
+      <div class="ramadan-banner" id="ramadanBanner" style="display:none;">
+        <div class="rb-glow"></div>
+        <div class="rb-icon">🌙</div>
+        <div class="rb-title">رمضان كريم</div>
+        <div class="rb-sub">تقبّل الله صيامكم وقيامكم</div>
+        <div class="rb-times">
+          <div class="rb-row"><span>🌅 السحور حتى</span><span id="rbSuhoor">--:--</span></div>
+          <div class="rb-row"><span>🌇 الإفطار الساعة</span><span id="rbIftar">--:--</span></div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card prayer" onclick="nav('prayer')">
+          <div class="icon-wrap">🕌</div>
+          <h3>مواقيت الصلاة</h3>
+          <p>أوقات الصلاة في مدينتك</p>
+        </div>
+        <div class="card zakat" onclick="nav('zakat')">
+          <div class="icon-wrap">💰</div>
+          <h3>حاسبة الزكاة</h3>
+          <p>احسب زكاتك بدقة</p>
+        </div>
+        <div class="card installment" onclick="nav('installment')">
+          <div class="icon-wrap">🧮</div>
+          <h3>حاسبة الأقساط</h3>
+          <p>قسّط مشترياتك بذكاء</p>
+        </div>
+        <div class="card ai" onclick="nav('ai')">
+          <div class="icon-wrap">✨</div>
+          <h3>المساعد الذكي</h3>
+          <p>مساعدتك المالية الشخصية</p>
+        </div>
+        <div class="card tasbih" onclick="nav('tasbih')">
+          <div class="icon-wrap">📿</div>
+          <h3>التسبيح الإلكتروني</h3>
+          <p>سبّحة رقمية بعداد تلقائي</p>
+        </div>
+        <div class="card adhkar" onclick="nav('adhkar')">
+          <div class="icon-wrap">🤲</div>
+          <h3>الأذكار والأدعية</h3>
+          <p>صباح، مساء، وأدعية مختارة</p>
+        </div>
+        <div class="card calendar" onclick="nav('calendar')">
+          <div class="icon-wrap">📅</div>
+          <h3>التقويم الهجري</h3>
+          <p>التاريخ الهجري والميلادي</p>
+        </div>
+        <div class="card qibla" onclick="nav('qibla')">
+          <div class="icon-wrap">🧭</div>
+          <h3>اتجاه القبلة</h3>
+          <p>بوصلة تحدد اتجاه الكعبة</p>
+        </div>
+      </div>
+
+      <div class="daily-tip">
+        <div class="label">💡 نصيحة اليوم</div>
+        <div class="text">تذكّر: زكاة المال واجبة إذا بلغ المال النصاب وحال عليه الحول (سنة هجرية كاملة).</div>
+      </div>
+    </section>
+
+    <!-- PRAYER TIMES -->
+    <section class="screen" id="screen-prayer">
+      <div class="section-head theme-teal">
+        <div class="badge">🕌</div>
+        <div><h2>مواقيت الصلاة</h2><div class="sub">بتوقيت القاهرة المحلي</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="field-group">
+          <label>اختر مدينتك</label>
+          <select class="city-select" id="citySelect" onchange="loadPrayerTimes()">
+            <option value="cairo">القاهرة</option>
+            <option value="giza">الجيزة</option>
+            <option value="alex">الإسكندرية</option>
+            <option value="qalyubia">القليوبية</option>
+            <option value="portsaid">بورسعيد</option>
+            <option value="suez">السويس</option>
+            <option value="dakahlia">الدقهلية</option>
+            <option value="sharqia">الشرقية</option>
+            <option value="gharbia">الغربية</option>
+            <option value="monufia">المنوفية</option>
+            <option value="beheira">البحيرة</option>
+            <option value="kafrelsheikh">كفر الشيخ</option>
+            <option value="damietta">دمياط</option>
+            <option value="ismailia">الإسماعيلية</option>
+            <option value="faiyum">الفيوم</option>
+            <option value="beniseuf">بني سويف</option>
+            <option value="minya">المنيا</option>
+            <option value="asyut">أسيوط</option>
+            <option value="sohag">سوهاج</option>
+            <option value="qena">قنا</option>
+            <option value="luxor">الأقصر</option>
+            <option value="aswan">أسوان</option>
+            <option value="redsea">البحر الأحمر</option>
+            <option value="newvalley">الوادي الجديد</option>
+            <option value="matrouh">مطروح</option>
+            <option value="northsinai">شمال سيناء</option>
+            <option value="southsinai">جنوب سيناء</option>
+          </select>
+        </div>
+        <div class="field-group" style="margin-bottom:0;">
+          <label style="display:flex;align-items:center;justify-content:space-between;">
+            <span>🔔 تذكير قبل الأذان</span>
+            <span class="reminder-toggle" id="reminderToggle" onclick="toggleReminder()">مفعّل</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="next-prayer-banner" id="nextPrayerBanner">
+        جاري تحميل المواقيت...
+      </div>
+      <div class="reminder-alert" id="reminderAlert"></div>
+
+      <div class="prayer-list" id="prayerList"></div>
+    </section>
+
+    <!-- ZAKAT -->
+    <section class="screen" id="screen-zakat">
+      <div class="section-head theme-gold">
+        <div class="badge">💰</div>
+        <div><h2>حاسبة الزكاة</h2><div class="sub">زكاة المال والذهب</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="field-group">
+          <label>إجمالي النقود المدخرة</label>
+          <div class="input-row">
+            <input type="number" id="zCash" placeholder="0" oninput="calcZakat()">
+            <span class="unit">جنيه</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>قيمة الذهب والفضة المملوكة</label>
+          <div class="input-row">
+            <input type="number" id="zGold" placeholder="0" oninput="calcZakat()">
+            <span class="unit">جنيه</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>قيمة النصاب الحالي (سعر 85 جم ذهب عيار 21)</label>
+          <div class="input-row">
+            <input type="number" id="zNisab" value="507000" oninput="calcZakat()">
+            <span class="unit">جنيه</span>
+          </div>
+          <p class="nisab-note">محسوبة تقريبًا على سعر الذهب عيار 21 منتصف نوفمبر 2026 (حوالي 5,970 ج.م للجرام). سعر الذهب بيتغيّر يوميًا، فننصحك تتأكد من السعر الحالي وتعدّل الرقم هنا لو حابب دقة أعلى.</p>
+        </div>
+
+        <div class="result-box" id="zakatResult">
+          <div class="r-label">الزكاة الواجبة عليك (2.5%)</div>
+          <div class="r-value" id="zakatValue">0 ج.م</div>
+          <div class="r-note" id="zakatNote"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INSTALLMENT -->
+    <section class="screen" id="screen-installment">
+      <div class="section-head theme-blue">
+        <div class="badge">🧮</div>
+        <div><h2>حاسبة الأقساط</h2><div class="sub">خطط لمشترياتك بذكاء</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="field-group">
+          <label>سعر المنتج</label>
+          <div class="input-row">
+            <input type="number" id="iPrice" placeholder="0" oninput="calcInstallment()">
+            <span class="unit">جنيه</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>المقدم (اختياري)</label>
+          <div class="input-row">
+            <input type="number" id="iDown" placeholder="0" oninput="calcInstallment()">
+            <span class="unit">جنيه</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>عدد الشهور</label>
+          <div class="input-row">
+            <input type="number" id="iMonths" placeholder="12" value="12" oninput="calcInstallment()">
+            <span class="unit">شهر</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>نسبة المصاريف الإدارية السنوية (إن وجدت)</label>
+          <div class="input-row">
+            <input type="number" id="iRate" placeholder="0" value="0" oninput="calcInstallment()">
+            <span class="unit">%</span>
+          </div>
+        </div>
+
+        <div class="result-box" id="installmentResult">
+          <div class="r-label">القسط الشهري</div>
+          <div class="r-value" id="installmentValue">0 ج.م</div>
+          <div class="installment-breakdown" id="installmentBreakdown"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI ASSISTANT -->
+    <section class="screen" id="screen-ai">
+      <div class="section-head theme-purple">
+        <div class="badge">✨</div>
+        <div><h2>المساعد الذكي</h2><div class="sub">مدعوم بالذكاء الاصطناعي</div></div>
+      </div>
+
+      <div class="ai-tabs">
+        <div class="ai-tab active" onclick="aiTab('qa', this)">أسئلة مالية وشرعية</div>
+        <div class="ai-tab" onclick="aiTab('doc', this)">تلخيص المستندات</div>
+        <div class="ai-tab" onclick="aiTab('expense', this)">مستشار المصاريف</div>
+      </div>
+
+      <div class="panel" id="aiPanel">
+        <!-- Paywall shown by default -->
+        <div class="paywall" id="aiPaywall">
+          <div class="lock-icon">🔒</div>
+          <h3>ميزة مدفوعة</h3>
+          <p>اشترك عشان تفتح المساعد الذكي وتسأله أي سؤال مالي أو شرعي، أو تخليه يلخصلك مستنداتك، أو يدّيك نصايح لمصاريفك.</p>
+          <div class="price-tag">٩٩ ج.م <span>/ شهريًا</span></div>
+
+          <div class="pay-methods" id="payMethods">
+            <div class="pay-method active" data-m="card" onclick="selectPayMethod(this)">
+              <span class="pm-icon">💳</span><span>بطاقة بنكية (فيزا / ماستركارد)</span>
+            </div>
+            <div class="pay-method" data-m="vcash" onclick="selectPayMethod(this)">
+              <span class="pm-icon">📱</span><span>فودافون كاش</span>
+            </div>
+            <div class="pay-method" data-m="fawry" onclick="selectPayMethod(this)">
+              <span class="pm-icon">🧾</span><span>فوري</span>
+            </div>
+          </div>
+
+          <button class="btn btn-purple" onclick="unlockAI()">اشترك الآن بـ ٩٩ ج.م</button>
+          <p class="pay-note">⚠️ هذا نموذج أولي: شاشة الدفع هنا للعرض فقط ولا تخصم أي مبلغ فعليًا. لتفعيل دفع حقيقي، التطبيق يحتاج ربط ببوابة دفع مصرية (مثل Paymob أو Fawry) من خلال سيرفر خلفي (Backend) يتحقق من الاشتراك بأمان.</p>
+        </div>
+
+        <!-- Unlocked content (hidden by default) -->
+        <div id="aiContent" style="display:none;">
+
+          <div id="ai-qa">
+            <div class="chat-area" id="chatArea">
+              <div class="msg bot">أهلاً بيك! أنا هنا أجاوبك على أي سؤال مالي أو شرعي بسيط. جرّب تسألني حاجة 👋</div>
+            </div>
+            <div class="chat-input-row">
+              <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا...">
+              <button class="send-btn" onclick="sendChat()">➤</button>
+            </div>
+          </div>
+
+          <div id="ai-doc" style="display:none;">
+            <div class="upload-box" onclick="simulateUpload()">
+              <div class="u-icon">📄</div>
+              اضغط هنا لرفع مستند أو فاتورة لتلخيصها
+            </div>
+            <div id="docResult"></div>
+          </div>
+
+          <div id="ai-expense" style="display:none;">
+            <div class="expense-input">
+              <input type="text" id="expName" placeholder="اسم المصروف">
+              <input type="number" id="expAmount" placeholder="المبلغ">
+            </div>
+            <button class="btn btn-purple" onclick="addExpense()">إضافة</button>
+            <div class="expense-list" id="expenseList"></div>
+            <div id="expenseAdvice"></div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- TASBIH -->
+    <section class="screen" id="screen-tasbih">
+      <div class="section-head theme-green">
+        <div class="badge">📿</div>
+        <div><h2>التسبيح الإلكتروني</h2><div class="sub">سبّحة رقمية بعداد تلقائي</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="dhikr-picker" id="dhikrPicker">
+          <div class="dhikr-chip active" onclick="selectDhikr('سبحان الله', this)">سبحان الله</div>
+          <div class="dhikr-chip" onclick="selectDhikr('الحمد لله', this)">الحمد لله</div>
+          <div class="dhikr-chip" onclick="selectDhikr('الله أكبر', this)">الله أكبر</div>
+          <div class="dhikr-chip" onclick="selectDhikr('لا إله إلا الله', this)">لا إله إلا الله</div>
+          <div class="dhikr-chip" onclick="selectDhikr('أستغفر الله', this)">أستغفر الله</div>
+          <div class="dhikr-chip" onclick="selectDhikr('اللهم صل على محمد', this)">الصلاة على النبي</div>
+        </div>
+
+        <div class="target-row">
+          <div class="target-chip active" onclick="setTarget(33, this)">33</div>
+          <div class="target-chip" onclick="setTarget(99, this)">99</div>
+          <div class="target-chip" onclick="setTarget(100, this)">100</div>
+          <div class="target-chip" onclick="setTarget(1000, this)">بلا حدود</div>
+        </div>
+
+        <div class="tasbih-circle" id="tasbihCircle" onclick="incrementTasbih()">
+          <div class="count" id="tasbihCount">0</div>
+          <div class="label" id="tasbihLabel">سبحان الله</div>
+          <div class="hint">اضغط هنا للتسبيح</div>
+        </div>
+
+        <div class="tasbih-controls">
+          <button class="btn-reset" onclick="resetTasbih()">إعادة تصفير</button>
+          <button class="btn-target" id="tasbihTargetBtn" disabled>الهدف: 33</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ADHKAR -->
+    <section class="screen" id="screen-adhkar">
+      <div class="section-head theme-rose">
+        <div class="badge">🤲</div>
+        <div><h2>الأذكار والأدعية</h2><div class="sub">صباح، مساء، وأدعية مختارة</div></div>
+      </div>
+
+      <div class="adhkar-tabs">
+        <div class="adhkar-tab active" onclick="adhkarTab('sabah', this)">أذكار الصباح</div>
+        <div class="adhkar-tab" onclick="adhkarTab('masaa', this)">أذكار المساء</div>
+        <div class="adhkar-tab" onclick="adhkarTab('duaa', this)">أدعية مختارة</div>
+      </div>
+
+      <div class="last-read" id="lastReadLabel"></div>
+      <div id="adhkarContent"></div>
+      <button class="btn btn-purple" id="markReadBtn" onclick="markAdhkarRead()" style="background:linear-gradient(135deg,var(--rose-400),var(--rose-600));">✅ تم قراءتها الآن</button>
+    </section>
+
+    <!-- CALENDAR -->
+    <section class="screen" id="screen-calendar">
+      <div class="section-head theme-indigo">
+        <div class="badge">📅</div>
+        <div><h2>التقويم الهجري</h2><div class="sub">التاريخ الهجري والميلادي</div></div>
+      </div>
+
+      <div class="today-card">
+        <div class="g-date" id="calTodayGregorian"></div>
+        <div class="h-date" id="calTodayHijri"></div>
+      </div>
+
+      <div class="panel">
+        <div class="cal-mode-toggle">
+          <div class="cal-mode-btn active" id="calModeGreg" onclick="calSetMode('gregorian')">📅 ميلادي أساسي</div>
+          <div class="cal-mode-btn" id="calModeHijri" onclick="calSetMode('hijri')">🌙 هجري أساسي</div>
+        </div>
+        <div class="cal-nav">
+          <button onclick="calChangeMonth(-1)">‹</button>
+          <div class="cal-month-label" id="calMonthLabel"></div>
+          <button onclick="calChangeMonth(1)">›</button>
+        </div>
+        <div class="cal-range-label" id="calRangeLabel"></div>
+        <div class="cal-grid" id="calGrid"></div>
+        <p class="cal-note">التاريخ الهجري هنا محسوب حسابيًا (تقويم أم القرى التقريبي)، وممكن يختلف بيوم واحد عن الإعلان الرسمي القائم على رؤية الهلال — خصوصًا في تحديد بداية رمضان وعيد الفطر وعيد الأضحى، فيهم ننصحك بمتابعة إعلان دار الإفتاء المصرية.</p>
+      </div>
+    </section>
+
+    <!-- QIBLA -->
+    <section class="screen" id="screen-qibla">
+      <div class="section-head theme-cyan">
+        <div class="badge">🧭</div>
+        <div><h2>اتجاه القبلة</h2><div class="sub">بوصلة تحدد اتجاه الكعبة</div></div>
+      </div>
+
+      <div class="panel" style="text-align:center;">
+        <button class="btn btn-cyan" id="locateBtn" onclick="locateQibla()">📍 حدد اتجاه القبلة من موقعي</button>
+
+        <div id="qiblaResult" style="display:none;">
+          <div class="compass-wrap">
+            <div class="compass-ring">
+              <span class="compass-label n">N</span>
+              <span class="compass-label e">E</span>
+              <span class="compass-label s">S</span>
+              <span class="compass-label w">W</span>
+              <div class="qibla-needle" id="qiblaNeedle"></div>
+              <div class="kaaba-dot">🕋</div>
+            </div>
+          </div>
+          <div class="qibla-degree" id="qiblaDegree"></div>
+          <div class="qibla-distance" id="qiblaDistance"></div>
+          <button class="btn-live" id="liveCompassBtn" onclick="enableLiveCompass()">🧭 تفعيل البوصلة الحية (تجريبي)</button>
+          <p class="qibla-note">لو فعّلت البوصلة الحية: لِف بجسمك ببطء لحد ما يبقى السهم مشاور لفوق تمامًا، وده محتاج معايرة بوصلة جهازك عشان يبقى دقيق. ولو مش عايز تستخدمها، السهم بيوضّحلك أصلًا زاوية اتجاه القبلة من الشمال الجغرافي، وتقدر تستخدمها مع أي بوصلة تانية.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <div class="nav-item active" id="nav-home" onclick="nav('home')">
+      <span class="n-icon">🏠</span>الرئيسية
+    </div>
+    <div class="nav-item" id="nav-prayer" onclick="nav('prayer')">
+      <span class="n-icon">🕌</span>الصلاة
+    </div>
+    <div class="nav-item" id="nav-zakat" onclick="nav('zakat')">
+      <span class="n-icon">💰</span>الزكاة
+    </div>
+    <div class="nav-item" id="nav-installment" onclick="nav('installment')">
+      <span class="n-icon">🧮</span>الأقساط
+    </div>
+    <div class="nav-item" id="nav-ai" onclick="nav('ai')">
+      <span class="n-icon">✨</span>المساعد
+    </div>
+  </nav>
+
+</div>
+
+<script>
+const titles = {
+  home: ['رفيقي اليومي', 'كل ما تحتاجه في مكان واحد'],
+  prayer: ['مواقيت الصلاة', 'بتوقيت مدينتك'],
+  zakat: ['حاسبة الزكاة', 'احسب زكاتك بدقة'],
+  installment: ['حاسبة الأقساط', 'خطط لمشترياتك'],
+  ai: ['المساعد الذكي', 'مدعوم بالذكاء الاصطناعي'],
+  tasbih: ['التسبيح الإلكتروني', 'سبّحة رقمية بعداد تلقائي'],
+  adhkar: ['الأذكار والأدعية', 'صباح، مساء، وأدعية مختارة'],
+  calendar: ['التقويم الهجري', 'التاريخ الهجري والميلادي'],
+  qibla: ['اتجاه القبلة', 'بوصلة تحدد اتجاه الكعبة']
+};
+
+function nav(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navEl = document.getElementById('nav-' + screen);
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('pageTitle').textContent = titles[screen][0];
+  document.getElementById('pageSub').textContent = titles[screen][1];
+  window.scrollTo(0,0);
+  if (screen === 'prayer' && !window.__prayerLoaded) {
+    loadPrayerTimes();
+    window.__prayerLoaded = true;
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }
+  if (screen === 'adhkar' && !window.__adhkarLoaded) { adhkarTab('sabah', document.querySelector('.adhkar-tab')); window.__adhkarLoaded = true; }
+  if (screen === 'calendar' && !window.__calLoaded) { renderCalendar(); window.__calLoaded = true; }
+}
+
+/* ---------- PRAYER TIMES ---------- */
+// Precise coordinates per governorate capital, so timings are calculated for
+// the actual city (not a rough text-geocode), using method 5 = Egyptian
+// General Authority of Survey, the method Egypt's own prayer calendars use.
+const GOV_COORDS = {
+  cairo: { lat:30.0444, lng:31.2357 },
+  giza: { lat:30.0131, lng:31.2089 },
+  alex: { lat:31.2001, lng:29.9187 },
+  qalyubia: { lat:30.4667, lng:31.1833 },
+  portsaid: { lat:31.2653, lng:32.3019 },
+  suez: { lat:29.9668, lng:32.5498 },
+  dakahlia: { lat:31.0409, lng:31.3785 },
+  sharqia: { lat:30.5877, lng:31.5020 },
+  gharbia: { lat:30.7865, lng:31.0004 },
+  monufia: { lat:30.5519, lng:31.0117 },
+  beheira: { lat:31.0409, lng:30.4696 },
+  kafrelsheikh: { lat:31.1107, lng:30.9388 },
+  damietta: { lat:31.4165, lng:31.8133 },
+  ismailia: { lat:30.5965, lng:32.2715 },
+  faiyum: { lat:29.3084, lng:30.8441 },
+  beniseuf: { lat:29.0661, lng:31.0994 },
+  minya: { lat:28.1099, lng:30.7503 },
+  asyut: { lat:27.1783, lng:31.1859 },
+  sohag: { lat:26.5569, lng:31.6948 },
+  qena: { lat:26.1551, lng:32.7160 },
+  luxor: { lat:25.6872, lng:32.6396 },
+  aswan: { lat:24.0889, lng:32.8998 },
+  redsea: { lat:27.2574, lng:33.8129 },
+  newvalley: { lat:25.4514, lng:30.5467 },
+  matrouh: { lat:31.3543, lng:27.2373 },
+  northsinai: { lat:31.1316, lng:33.7984 },
+  southsinai: { lat:27.9158, lng:34.3300 }
+};
+
+let allPrayerTimes = [];
+let reminderOn = true;
+let notifiedFor = null; // prevents repeating the same alert
+
+/* ---- Local astronomical calculation (no internet needed, works fully offline) ----
+   Uses the Egyptian General Authority of Survey angles (Fajr 19.5°, Isha 17.5°,
+   Asr = Shafi'i/standard factor) with the standard solar-position equations
+   (declination + equation of time). This removes the dependency on any external
+   API, so prayer times always load instantly and never fail due to network/CORS
+   restrictions inside the published page. */
+function degToRad(d){ return d*Math.PI/180; }
+function radToDeg(r){ return r*180/Math.PI; }
+function dayOfYear(date){
+  const start = new Date(date.getFullYear(),0,0);
+  return Math.floor((date - start)/86400000);
+}
+function sunDeclinationAndEqT(date){
+  const N = dayOfYear(date);
+  const B = degToRad(360/365*(N-81));
+  const EoT = 9.87*Math.sin(2*B) - 7.53*Math.cos(B) - 1.5*Math.sin(B); // minutes
+  const decl = 23.45*Math.sin(degToRad(360/365*(284+N))); // degrees
+  return { decl, EoT };
+}
+function hourAngleFor(lat, decl, depressionDeg){
+  const latR = degToRad(lat), declR = degToRad(decl);
+  let cosH = (Math.sin(degToRad(-depressionDeg)) - Math.sin(latR)*Math.sin(declR)) / (Math.cos(latR)*Math.cos(declR));
+  cosH = Math.max(-1, Math.min(1, cosH));
+  return radToDeg(Math.acos(cosH)); // degrees
+}
+function asrHourAngle(lat, decl, factor){
+  const latR = degToRad(lat), declR = degToRad(decl);
+  const altitude = radToDeg(Math.atan(1/(factor + Math.tan(Math.abs(latR-declR)))));
+  let cosH = (Math.sin(degToRad(altitude)) - Math.sin(latR)*Math.sin(declR)) / (Math.cos(latR)*Math.cos(declR));
+  cosH = Math.max(-1, Math.min(1, cosH));
+  return radToDeg(Math.acos(cosH));
+}
+function computePrayerTimes(lat, lng, date, tzOffsetHours){
+  const { decl, EoT } = sunDeclinationAndEqT(date);
+  const LSTM = 15*tzOffsetHours;
+  const timeCorrectionMin = 4*(lng - LSTM) + EoT;
+  const solarNoon = 12 - timeCorrectionMin/60;
+
+  const fajrH = hourAngleFor(lat, decl, 19.5)/15;
+  const sunriseSetH = hourAngleFor(lat, decl, 0.833)/15;
+  const ishaH = hourAngleFor(lat, decl, 17.5)/15;
+  const asrH = asrHourAngle(lat, decl, 1)/15;
+
+  return {
+    Fajr: solarNoon - fajrH,
+    Dhuhr: solarNoon + (1/60),
+    Asr: solarNoon + asrH,
+    Maghrib: solarNoon + sunriseSetH,
+    Isha: solarNoon + ishaH
+  };
+}
+function hoursToDate(baseDate, hoursDecimal){
+  const d = new Date(baseDate);
+  d.setHours(0,0,0,0);
+  d.setMinutes(Math.round(hoursDecimal*60));
+  return d;
+}
+
+function getSavedGov() { try { return localStorage.getItem('selectedGov') || 'cairo'; } catch(e) { return 'cairo'; } }
+function saveGov(g) { try { localStorage.setItem('selectedGov', g); } catch(e) {} }
+
+function loadPrayerTimes() {
+  const gov = document.getElementById('citySelect').value;
+  saveGov(gov);
+  checkRamadanBanner();
+  const coords = GOV_COORDS[gov] || GOV_COORDS.cairo;
+  const list = document.getElementById('prayerList');
+  const now = new Date();
+  const times = computePrayerTimes(coords.lat, coords.lng, now, 2); // Egypt = UTC+2 fixed, no DST
+
+  const prayers = [
+    { key:'Fajr', name:'الفجر', icon:'🌅' },
+    { key:'Dhuhr', name:'الظهر', icon:'☀️' },
+    { key:'Asr', name:'العصر', icon:'🌤️' },
+    { key:'Maghrib', name:'المغرب', icon:'🌇' },
+    { key:'Isha', name:'العشاء', icon:'🌙' }
+  ];
+  list.innerHTML = '';
+  allPrayerTimes = [];
+  prayers.forEach(p => {
+    const pTime = hoursToDate(now, times[p.key]);
+    allPrayerTimes.push({ name: p.name, time: pTime });
+    const row = document.createElement('div');
+    row.className = 'prayer-row';
+    row.innerHTML = `<span class="name">${p.icon} ${p.name}</span><span class="time">${to12h(pTime.getHours(), pTime.getMinutes())}</span>`;
+    list.appendChild(row);
+  });
+  updatePrayerCountdown();
+  if (!window.__reminderTicking) {
+    window.__reminderTicking = true;
+    setInterval(updatePrayerCountdown, 15000);
+  }
+}
+
+function updatePrayerCountdown() {
+  const banner = document.getElementById('nextPrayerBanner');
+  if (!allPrayerTimes.length) return;
+  const now = new Date();
+  const nextPrayer = allPrayerTimes.find(p => p.time > now);
+
+  if (!nextPrayer) {
+    banner.innerHTML = 'كل صلوات اليوم انتهت، نلقاكم بكرة إن شاء الله 🤍';
+    hideReminderAlert();
+    return;
+  }
+
+  const diff = nextPrayer.time - now;
+  const hrs = Math.floor(diff/3600000), mins = Math.floor((diff%3600000)/60000);
+  banner.innerHTML = `الصلاة القادمة: ${nextPrayer.name}<span class="countdown">بعد ${hrs} س ${mins} د</span>`;
+
+  const totalMinsLeft = Math.floor(diff/60000);
+  if (reminderOn && totalMinsLeft <= 10 && totalMinsLeft >= 0) {
+    showReminderAlert(nextPrayer.name, totalMinsLeft);
+  } else {
+    hideReminderAlert();
+  }
+}
+
+function showReminderAlert(prayerName, minsLeft) {
+  const box = document.getElementById('reminderAlert');
+  box.innerHTML = `🔔 <span>باقي ${minsLeft <= 1 ? 'أقل من دقيقة' : minsLeft + ' دقيقة'} على أذان ${prayerName}، استعد للصلاة 🤍</span>`;
+  box.classList.add('show');
+
+  const key = prayerName + '-' + new Date().toDateString();
+  if (notifiedFor !== key && 'Notification' in window && Notification.permission === 'granted') {
+    new Notification('اقترب موعد الصلاة', { body: `باقي ${minsLeft} دقيقة على أذان ${prayerName}` });
+    notifiedFor = key;
+  }
+}
+function hideReminderAlert() {
+  document.getElementById('reminderAlert').classList.remove('show');
+}
+
+function toggleReminder() {
+  reminderOn = !reminderOn;
+  const btn = document.getElementById('reminderToggle');
+  if (reminderOn) {
+    btn.textContent = 'مفعّل'; btn.classList.remove('off');
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+    updatePrayerCountdown();
+  } else {
+    btn.textContent = 'متوقف'; btn.classList.add('off');
+    hideReminderAlert();
+  }
+}
+
+function to12h(h,m) {
+  const period = h >= 12 ? 'م' : 'ص';
+  let hh = h % 12; if (hh === 0) hh = 12;
+  return `${hh}:${m.toString().padStart(2,'0')} ${period}`;
+}
+
+/* ---------- ZAKAT ---------- */
+function calcZakat() {
+  const cash = parseFloat(document.getElementById('zCash').value) || 0;
+  const gold = parseFloat(document.getElementById('zGold').value) || 0;
+  const nisab = parseFloat(document.getElementById('zNisab').value) || 170000;
+  const total = cash + gold;
+  const box = document.getElementById('zakatResult');
+  if (total <= 0) { box.classList.remove('show'); return; }
+  box.classList.add('show');
+  if (total >= nisab) {
+    const zakat = total * 0.025;
+    document.getElementById('zakatValue').textContent = formatMoney(zakat) + ' ج.م';
+    document.getElementById('zakatNote').textContent = `إجمالي أموالك (${formatMoney(total)} ج.م) تجاوز النصاب، فتجب عليك الزكاة بنسبة 2.5% — بشرط مرور سنة هجرية كاملة على هذا المبلغ.`;
+  } else {
+    document.getElementById('zakatValue').textContent = '0 ج.م';
+    document.getElementById('zakatNote').textContent = `إجمالي أموالك (${formatMoney(total)} ج.م) أقل من النصاب (${formatMoney(nisab)} ج.م)، فلا زكاة واجبة عليك حاليًا.`;
+  }
+}
+function formatMoney(n) { return Math.round(n).toLocaleString('en-US'); }
+
+/* ---------- INSTALLMENT ---------- */
+function calcInstallment() {
+  const price = parseFloat(document.getElementById('iPrice').value) || 0;
+  const down = parseFloat(document.getElementById('iDown').value) || 0;
+  const months = parseInt(document.getElementById('iMonths').value) || 1;
+  const annualRate = parseFloat(document.getElementById('iRate').value) || 0;
+  const box = document.getElementById('installmentResult');
+  if (price <= 0) { box.classList.remove('show'); return; }
+  box.classList.add('show');
+
+  const principal = Math.max(price - down, 0);
+  const totalWithFees = principal * (1 + (annualRate/100) * (months/12));
+  const monthly = totalWithFees / months;
+  const totalFees = totalWithFees - principal;
+
+  document.getElementById('installmentValue').textContent = formatMoney(monthly) + ' ج.م / شهريًا';
+  document.getElementById('installmentBreakdown').innerHTML = `
+    <div class="ib-row"><span>المبلغ بعد المقدم</span><span>${formatMoney(principal)} ج.م</span></div>
+    <div class="ib-row"><span>إجمالي المصاريف الإدارية</span><span>${formatMoney(totalFees)} ج.م</span></div>
+    <div class="ib-row"><span>إجمالي ما ستدفعه</span><span>${formatMoney(totalWithFees + down)} ج.م</span></div>
+  `;
+}
+
+/* ---------- AI ASSISTANT (demo) ---------- */
+let aiUnlocked = false;
+let selectedPayMethod = 'card';
+function selectPayMethod(el) {
+  document.querySelectorAll('.pay-method').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  selectedPayMethod = el.dataset.m;
+}
+function unlockAI() {
+  // DEMO ONLY — NOT A REAL CHARGE.
+  // This screen only simulates the checkout UI (card / Vodafone Cash / Fawry).
+  // A real subscription needs: a backend server, a merchant account with an Egyptian
+  // payment gateway (e.g. Paymob, Fawry Pay), and server-side verification of the
+  // payment/webhook before unlocking the AI features for that user's account.
+  aiUnlocked = true;
+  document.getElementById('aiPaywall').style.display = 'none';
+  document.getElementById('aiContent').style.display = 'block';
+}
+
+function aiTab(which, el) {
+  document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['qa','doc','expense'].forEach(k => {
+    document.getElementById('ai-' + k).style.display = (k === which) ? 'block' : 'none';
+  });
+}
+
+const demoAnswers = [
+  "ده سؤال كويس! بشكل عام، الأفضل دايمًا تستشير أهل العلم في التفاصيل الدقيقة، لكن هقولك الأساسيات المعروفة في المسألة دي.",
+  "بالنسبة للزكاة، الأصل إنها تجب على المال اللي بلغ النصاب وحال عليه الحول كامل.",
+  "في الأقساط، احرص دايمًا إنك تقرأ شروط المصاريف الإدارية كويس قبل ما توافق.",
+  "ممكن تستخدم حاسبة الزكاة أو الأقساط اللي في التطبيق عشان ترقام دقيقة لحالتك."
+];
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const area = document.getElementById('chatArea');
+  area.innerHTML += `<div class="msg user">${escapeHtml(text)}</div>`;
+  input.value = '';
+  area.scrollTop = area.scrollHeight;
+  setTimeout(() => {
+    const reply = demoAnswers[Math.floor(Math.random()*demoAnswers.length)];
+    area.innerHTML += `<div class="msg bot">${reply}</div>`;
+    area.scrollTop = area.scrollHeight;
+  }, 500);
+}
+function escapeHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function simulateUpload() {
+  document.getElementById('docResult').innerHTML = `
+    <div class="msg bot" style="max-width:100%;">
+      📋 ملخص الفاتورة: المبلغ الإجمالي 1,250 ج.م، تاريخ الاستحقاق بعد 15 يوم، يشمل رسوم خدمة 25 ج.م.
+      <br><br><small style="opacity:.6;">(هذا رد تجريبي — النسخة الحقيقية تحتاج ربط بخدمة ذكاء اصطناعي فعلية لقراءة المستند)</small>
+    </div>`;
+}
+
+let expenses = [];
+function addExpense() {
+  const name = document.getElementById('expName').value.trim();
+  const amount = parseFloat(document.getElementById('expAmount').value) || 0;
+  if (!name || amount <= 0) return;
+  expenses.push({ name, amount });
+  document.getElementById('expName').value = '';
+  document.getElementById('expAmount').value = '';
+  renderExpenses();
+}
+function renderExpenses() {
+  const list = document.getElementById('expenseList');
+  list.innerHTML = expenses.map(e => `<div class="expense-item"><span>${escapeHtml(e.name)}</span><span>${formatMoney(e.amount)} ج.م</span></div>`).join('');
+  const total = expenses.reduce((s,e) => s+e.amount, 0);
+  let advice = '';
+  if (expenses.length >= 2) {
+    if (total > 5000) advice = '⚠️ مصاريفك الشهرية مرتفعة نسبيًا، حاول تراجع البنود اللي مش أساسية.';
+    else advice = '👍 مصاريفك في حدود معقولة، استمر في المتابعة.';
+  }
+  document.getElementById('expenseAdvice').innerHTML = advice ? `<div class="msg bot" style="max-width:100%;margin-top:10px;">${advice} <br><small style="opacity:.6;">(نصيحة تجريبية — النسخة الحقيقية تحتاج ربط بذكاء اصطناعي فعلي)</small></div>` : '';
+}
+
+/* ---------- TASBIH ---------- */
+let tasbihCount = 0;
+let tasbihTarget = 33;
+let currentDhikr = 'سبحان الله';
+
+function loadTasbihState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('tasbihState') || '{}');
+    if (saved.dhikr) currentDhikr = saved.dhikr;
+    if (saved.count) tasbihCount = saved.count;
+    if (saved.target) tasbihTarget = saved.target;
+  } catch(e) {}
+}
+function saveTasbihState() {
+  try { localStorage.setItem('tasbihState', JSON.stringify({ dhikr: currentDhikr, count: tasbihCount, target: tasbihTarget })); } catch(e) {}
+}
+
+function selectDhikr(name, el) {
+  currentDhikr = name;
+  document.querySelectorAll('.dhikr-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tasbihLabel').textContent = name;
+  resetTasbih();
+}
+function setTarget(n, el) {
+  tasbihTarget = n;
+  document.querySelectorAll('.target-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tasbihTargetBtn').textContent = 'الهدف: ' + (n >= 1000 ? 'بلا حدود' : n);
+  saveTasbihState();
+}
+function incrementTasbih() {
+  tasbihCount++;
+  document.getElementById('tasbihCount').textContent = tasbihCount;
+  if (navigator.vibrate) { try { navigator.vibrate(15); } catch(e) {} }
+  if (tasbihCount === tasbihTarget) {
+    document.getElementById('tasbihCircle').style.borderColor = 'var(--gold-400)';
+    if (navigator.vibrate) { try { navigator.vibrate([30,60,30]); } catch(e) {} }
+  }
+  saveTasbihState();
+}
+function resetTasbih() {
+  tasbihCount = 0;
+  document.getElementById('tasbihCount').textContent = '0';
+  document.getElementById('tasbihCircle').style.borderColor = 'var(--green-400)';
+  saveTasbihState();
+}
+loadTasbihState();
+
+/* ---------- ADHKAR & DUAS ---------- */
+const adhkarData = {
+  sabah: [
+    { text: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ (آية الكرسي)", count: "1 مرة" },
+    { text: "قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ (سورة الإخلاص)", count: "3 مرات" },
+    { text: "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ (سورة الفلق)", count: "3 مرات" },
+    { text: "قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَٰهِ النَّاسِ ۝ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ (سورة الناس)", count: "3 مرات" },
+    { text: "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ.", count: "1 مرة" },
+    { text: "اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ.", count: "1 مرة" },
+    { text: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ (سيد الاستغفار)", count: "1 مرة" },
+    { text: "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ.", count: "3 مرات" },
+    { text: "رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا.", count: "3 مرات" },
+    { text: "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا، وَرِزْقًا طَيِّبًا، وَعَمَلًا مُتَقَبَّلًا.", count: "1 مرة" }
+  ],
+  masaa: [
+    { text: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ (آية الكرسي)", count: "1 مرة" },
+    { text: "قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ (سورة الإخلاص)", count: "3 مرات" },
+    { text: "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ (سورة الفلق)", count: "3 مرات" },
+    { text: "قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَٰهِ النَّاسِ ۝ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ (سورة الناس)", count: "3 مرات" },
+    { text: "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ.", count: "1 مرة" },
+    { text: "اللَّهُمَّ مَا أَمْسَى بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لَا شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ.", count: "1 مرة" },
+    { text: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.", count: "3 مرات" },
+    { text: "اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَهَ إِلَّا أَنْتَ.", count: "3 مرات" },
+    { text: "حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ.", count: "7 مرات" },
+    { text: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ.", count: "3 مرات" }
+  ],
+  duaa: [
+    { text: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ.", meta: "دعاء جامع" },
+    { text: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ.", meta: "دعاء العافية" },
+    { text: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي.", meta: "دعاء تيسير الأمور" },
+    { text: "اللَّهُمَّ يَسِّرْ لِي الرِّزْقَ الْحَلَالَ الطَّيِّبَ مِنْ غَيْرِ كَدٍّ وَلَا تَعَبٍ.", meta: "دعاء الرزق" },
+    { text: "اللَّهُمَّ اشْفِ أَنْتَ الشَّافِي، لَا شِفَاءَ إِلَّا شِفَاؤُكَ، شِفَاءً لَا يُغَادِرُ سَقَمًا.", meta: "دعاء الشفاء" },
+    { text: "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ.", meta: "دعاء الخروج من المنزل" },
+    { text: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ.", meta: "دعاء السفر" },
+    { text: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَالْعَجْزِ وَالْكَسَلِ، وَالْجُبْنِ وَالْبُخْلِ، وَضَلَعِ الدَّيْنِ وَغَلَبَةِ الرِّجَالِ.", meta: "دعاء الهم والدين" },
+    { text: "رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَلِلْمُؤْمِنِينَ يَوْمَ يَقُومُ الْحِسَابُ.", meta: "دعاء للوالدين" },
+    { text: "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي.", meta: "دعاء العفو" },
+    { text: "رَبِّ زِدْنِي عِلْمًا.", meta: "دعاء طلب العلم" }
+  ]
+};
+let currentAdhkarTab = 'sabah';
+function adhkarTab(which, el) {
+  currentAdhkarTab = which;
+  document.querySelectorAll('.adhkar-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const items = adhkarData[which];
+  const container = document.getElementById('adhkarContent');
+  container.innerHTML = items.map(it => `
+    <div class="adhkar-item">
+      <div class="a-text">${it.text}</div>
+      <div class="a-meta">
+        <span class="a-count">${it.count || it.meta}</span>
+        <span class="a-source">أذكار وأدعية مأثورة</span>
+      </div>
+    </div>
+  `).join('');
+  updateLastReadLabel();
+}
+
+function getLastReadMap() {
+  try { return JSON.parse(localStorage.getItem('adhkarLastRead') || '{}'); } catch(e) { return {}; }
+}
+function updateLastReadLabel() {
+  const map = getLastReadMap();
+  const ts = map[currentAdhkarTab];
+  const label = document.getElementById('lastReadLabel');
+  if (!ts) { label.textContent = '📖 لسه ما سجّلتش قراءتك للقسم ده'; return; }
+  const d = new Date(ts);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  const timeStr = to12h(d.getHours(), d.getMinutes());
+  label.textContent = sameDay ? `📖 آخر قراءة: النهاردة الساعة ${timeStr}` : `📖 آخر قراءة: ${d.toLocaleDateString('ar-EG')} الساعة ${timeStr}`;
+}
+function markAdhkarRead() {
+  const map = getLastReadMap();
+  map[currentAdhkarTab] = Date.now();
+  try { localStorage.setItem('adhkarLastRead', JSON.stringify(map)); } catch(e) {}
+  updateLastReadLabel();
+}
+
+/* ---------- HIJRI CALENDAR (local calculation, no internet needed) ---------- */
+const hijriMonths = ['محرم','صفر','ربيع الأول','ربيع الآخر','جمادى الأولى','جمادى الآخرة','رجب','شعبان','رمضان','شوال','ذو القعدة','ذو الحجة'];
+const gregMonths = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const dowNames = ['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+
+function gregorianToJDN(y, m, d) {
+  const a = Math.floor((14 - m) / 12);
+  const y2 = y + 4800 - a;
+  const m2 = m + 12 * a - 3;
+  return d + Math.floor((153 * m2 + 2) / 5) + 365 * y2 + Math.floor(y2 / 4) - Math.floor(y2 / 100) + Math.floor(y2 / 400) - 32045;
+}
+function jdnToHijri(jdn) {
+  const epoch = 1948440; // civil/tabular Islamic calendar epoch
+  let l = jdn - epoch + 10632;
+  const n = Math.floor((l - 1) / 10631);
+  l = l - 10631 * n + 354;
+  const j = Math.floor((10985 - l) / 5316) * Math.floor((50 * l) / 17719) + Math.floor(l / 5670) * Math.floor((43 * l) / 15238);
+  l = l - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) - Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
+  const month = Math.floor((24 * l) / 709);
+  const day = l - Math.floor((709 * month) / 24);
+  const year = 30 * n + j - 30;
+  return { year, month, day };
+}
+function hijriForDate(date) {
+  const jdn = gregorianToJDN(date.getFullYear(), date.getMonth() + 1, date.getDate());
+  return jdnToHijri(jdn);
+}
+
+let calViewDate = new Date();
+let calMode = 'gregorian';
+function calSetMode(mode) {
+  calMode = mode;
+  document.getElementById('calModeGreg').classList.toggle('active', mode === 'gregorian');
+  document.getElementById('calModeHijri').classList.toggle('active', mode === 'hijri');
+  renderCalendar();
+}
+function calChangeMonth(delta) {
+  calViewDate.setMonth(calViewDate.getMonth() + delta);
+  renderCalendar();
+}
+function renderCalendar() {
+  const today = new Date();
+  const todayHijri = hijriForDate(today);
+  document.getElementById('calTodayGregorian').textContent = `${today.getDate()} ${gregMonths[today.getMonth()]} ${today.getFullYear()}م — ${dowNames[today.getDay()]}`;
+  document.getElementById('calTodayHijri').textContent = `${todayHijri.day} ${hijriMonths[todayHijri.month - 1]} ${todayHijri.year}هـ`;
+
+  const y = calViewDate.getFullYear(), m = calViewDate.getMonth();
+  if (calMode === 'hijri') {
+    const midHijri = hijriForDate(new Date(y, m, 15));
+    document.getElementById('calMonthLabel').textContent = `${hijriMonths[midHijri.month - 1]} ${midHijri.year}هـ`;
+  } else {
+    document.getElementById('calMonthLabel').textContent = `${gregMonths[m]} ${y}`;
+  }
+
+  const firstDay = new Date(y, m, 1);
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const startOffset = firstDay.getDay(); // 0=Sunday
+
+  const grid = document.getElementById('calGrid');
+  let html = dowNames.map(d => `<div class="cal-dow">${d}</div>`).join('');
+  for (let i = 0; i < startOffset; i++) html += `<div class="cal-cell empty"></div>`;
+
+  const hijriMonthsSeen = []; // to build the "corresponds to" range label
+  for (let day = 1; day <= daysInMonth; day++) {
+    const d = new Date(y, m, day);
+    const hd = hijriForDate(d);
+    const tag = `${hijriMonths[hd.month - 1]} ${hd.year}هـ`;
+    if (!hijriMonthsSeen.includes(tag)) hijriMonthsSeen.push(tag);
+    const isToday = d.toDateString() === today.toDateString();
+
+    const primary = calMode === 'hijri' ? hd.day : day;
+    const secondary = calMode === 'hijri' ? `${day} ${gregMonths[m].slice(0,3)}` : `${hd.day} ${hijriMonths[hd.month-1].split(' ')[0]}`;
+
+    html += `<div class="cal-cell${isToday ? ' today' : ''}"><span class="cell-primary">${primary}</span><span class="cell-secondary">${secondary}</span></div>`;
+  }
+  grid.innerHTML = html;
+  document.getElementById('calRangeLabel').textContent = 'يوافق: ' + hijriMonthsSeen.join(' ← ');
+}
+
+/* ---------- RAMADAN SUHOOR/IFTAR BANNER (auto-appears only during Ramadan) ---------- */
+function checkRamadanBanner() {
+  const banner = document.getElementById('ramadanBanner');
+  const today = new Date();
+  const h = hijriForDate(today);
+  if (h.month !== 9) { banner.style.display = 'none'; return; }
+  const gov = getSavedGov();
+  const coords = GOV_COORDS[gov] || GOV_COORDS.cairo;
+  const times = computePrayerTimes(coords.lat, coords.lng, today, 2);
+  const fajr = hoursToDate(today, times.Fajr);
+  const maghrib = hoursToDate(today, times.Maghrib);
+  document.getElementById('rbSuhoor').textContent = to12h(fajr.getHours(), fajr.getMinutes());
+  document.getElementById('rbIftar').textContent = to12h(maghrib.getHours(), maghrib.getMinutes());
+  banner.style.display = 'block';
+}
+
+/* ---------- QIBLA COMPASS (local calculation + device geolocation, no internet needed) ---------- */
+const KAABA_LAT = 21.4225, KAABA_LNG = 39.8262;
+let qiblaBearingValue = null;
+
+function qiblaBearing(lat, lng) {
+  const φ1 = degToRad(lat), φ2 = degToRad(KAABA_LAT);
+  const Δλ = degToRad(KAABA_LNG - lng);
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  return (radToDeg(Math.atan2(y, x)) + 360) % 360;
+}
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = degToRad(lat2 - lat1), dLng = degToRad(lng2 - lng1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(degToRad(lat1)) * Math.cos(degToRad(lat2)) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function locateQibla() {
+  const btn = document.getElementById('locateBtn');
+  if (!navigator.geolocation) { alert('المتصفح ده مش بيدعم تحديد الموقع الجغرافي.'); return; }
+  btn.textContent = 'جاري تحديد موقعك...';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+      qiblaBearingValue = qiblaBearing(lat, lng);
+      const dist = haversineKm(lat, lng, KAABA_LAT, KAABA_LNG);
+      document.getElementById('qiblaResult').style.display = 'block';
+      document.getElementById('qiblaNeedle').style.transform = `translate(-50%,-100%) rotate(${qiblaBearingValue}deg)`;
+      document.getElementById('qiblaDegree').textContent = `اتجاه القبلة: ${Math.round(qiblaBearingValue)}° من الشمال الجغرافي`;
+      document.getElementById('qiblaDistance').textContent = `المسافة إلى الكعبة المشرفة: ${Math.round(dist).toLocaleString('en-US')} كم`;
+      btn.textContent = '📍 تحديث موقعي';
+    },
+    (err) => {
+      let msg = 'تعذّر الوصول لموقعك.';
+      if (err.code === 1) msg = 'الإذن اتمنع. لازم توافق على طلب "الموقع الجغرافي" لما يظهرلك، أو تفعّله يدويًا من إعدادات الموقع/الخصوصية الخاصة بالمتصفح لهذه الصفحة.';
+      else if (err.code === 2) msg = 'تعذّر تحديد موقعك حاليًا (الموقع غير متاح). جرّب تفتح خدمة الـ GPS وتعيد المحاولة.';
+      else if (err.code === 3) msg = 'استغرق تحديد الموقع وقتًا أطول من اللازم. جرّب تاني.';
+      alert(msg);
+      btn.textContent = '📍 حدد اتجاه القبلة من موقعي';
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+function enableLiveCompass() {
+  const handleOrientation = (event) => {
+    let heading;
+    if (typeof event.webkitCompassHeading === 'number') {
+      heading = event.webkitCompassHeading;
+    } else if (event.alpha !== null && event.alpha !== undefined) {
+      heading = 360 - event.alpha;
+    } else {
+      return;
+    }
+    if (qiblaBearingValue === null) return;
+    const rotation = (qiblaBearingValue - heading + 360) % 360;
+    document.getElementById('qiblaNeedle').style.transform = `translate(-50%,-100%) rotate(${rotation}deg)`;
+  };
+  const start = () => {
+    window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+    window.addEventListener('deviceorientation', handleOrientation, true);
+    document.getElementById('liveCompassBtn').textContent = '✅ البوصلة الحية شغالة';
+  };
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission().then(state => {
+      if (state === 'granted') start();
+      else alert('محتاجين إذن الحساسات عشان البوصلة الحية تشتغل على جهازك.');
+    }).catch(() => alert('تعذّر تفعيل البوصلة الحية على هذا الجهاز.'));
+  } else {
+    start();
+  }
+}
+
+document.getElementById('citySelect').value = getSavedGov();
+checkRamadanBanner();
+calcZakat();
+</script>
+</body>
+</html>
