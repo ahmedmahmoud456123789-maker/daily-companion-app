@@ -112,6 +112,15 @@
   .compass-label.s { bottom:10px; left:50%; transform:translateX(-50%); }
   .compass-label.e { right:12px; top:50%; transform:translateY(-50%); }
   .compass-label.w { left:12px; top:50%; transform:translateY(-50%); }
+  .compass-ticks { position:absolute; inset:0; }
+  .compass-tick {
+    position:absolute; top:50%; left:50%; font-size:10px; font-weight:700; color:var(--cyan-600);
+    width:24px; margin-left:-12px; height:14px; margin-top:-7px; text-align:center;
+  }
+  .compass-tick-mark {
+    position:absolute; top:50%; left:50%; width:2px; height:9px; background:var(--cyan-400); opacity:.6;
+    margin-left:-1px; transform-origin:50% 100%;
+  }
   .qibla-needle {
     position:absolute; top:50%; left:50%; width:0; height:0;
     transform:translate(-50%,-100%) rotate(0deg); transform-origin:50% 100%; transition:transform .3s ease;
@@ -208,6 +217,8 @@
     color:var(--gold-800); font-weight:700; font-size:13px;
   }
   .next-prayer-banner .countdown { font-size:20px; font-weight:900; direction:ltr; margin-top:4px; display:block; }
+  .sync-status { text-align:center; font-size:10.5px; color:var(--ink-soft); margin-bottom:10px; }
+  .sync-status.online { color:var(--teal-600); font-weight:700; }
 
   .reminder-toggle {
     font-size:11.5px; font-weight:800; padding:5px 12px; border-radius:14px; cursor:pointer;
@@ -237,6 +248,9 @@
   input:focus { outline:none; border-color:var(--gold-400); }
   .unit { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:12px; color:var(--ink-soft); }
   .nisab-note { font-size:10.5px; color:var(--ink-soft); line-height:1.7; margin-top:7px; }
+  .gold-sync-box { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--gold-50); border-radius:12px; padding:10px 14px; margin-top:10px; }
+  .gold-sync-box .g-text { font-size:11.5px; color:var(--gold-800); font-weight:700; line-height:1.6; }
+  .gold-sync-box button { flex-shrink:0; border:none; background:var(--gold-400); color:#fff; font-weight:800; font-size:11px; padding:8px 12px; border-radius:10px; cursor:pointer; }
   .theme-gold .input-row input:focus { border-color:var(--gold-400); }
   .theme-blue .input-row input:focus { border-color:var(--blue-400); }
 
@@ -505,6 +519,8 @@
         </div>
       </div>
 
+      <div class="sync-status" id="prayerSyncStatus"></div>
+      <div class="sync-status" id="prayerSyncStatus"></div>
       <div class="next-prayer-banner" id="nextPrayerBanner">
         جاري تحميل المواقيت...
       </div>
@@ -542,6 +558,13 @@
             <span class="unit">جنيه</span>
           </div>
           <p class="nisab-note">محسوبة تقريبًا على سعر الذهب عيار 21 منتصف نوفمبر 2026 (حوالي 5,970 ج.م للجرام). سعر الذهب بيتغيّر يوميًا، فننصحك تتأكد من السعر الحالي وتعدّل الرقم هنا لو حابب دقة أعلى.</p>
+          <div class="gold-sync-box">
+            <span class="g-text" id="goldSyncText">⏳ جاري جلب سعر الذهب الحالي من الإنترنت...</span>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <button onclick="syncGoldPrice(true)">تحديث</button>
+              <button onclick="applySuggestedNisab()" style="background:var(--gold-600);">استخدام القيمة</button>
+            </div>
+          </div>
         </div>
 
         <div class="result-box" id="zakatResult">
@@ -765,10 +788,8 @@
         <div id="qiblaResult" style="display:none;">
           <div class="compass-wrap">
             <div class="compass-ring">
+              <div class="compass-ticks" id="compassTicks"></div>
               <span class="compass-label n">N</span>
-              <span class="compass-label e">E</span>
-              <span class="compass-label s">S</span>
-              <span class="compass-label w">W</span>
               <div class="qibla-needle" id="qiblaNeedle"></div>
               <div class="kaaba-dot">🕋</div>
             </div>
@@ -826,7 +847,6 @@ function nav(screen) {
   document.getElementById('pageSub').textContent = titles[screen][1];
   window.scrollTo(0,0);
   if (screen === 'prayer' && !window.__prayerLoaded) {
-    loadPrayerTimes();
     window.__prayerLoaded = true;
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
@@ -935,25 +955,19 @@ function hoursToDate(baseDate, hoursDecimal){
 function getSavedGov() { try { return localStorage.getItem('selectedGov') || 'cairo'; } catch(e) { return 'cairo'; } }
 function saveGov(g) { try { localStorage.setItem('selectedGov', g); } catch(e) {} }
 
-function loadPrayerTimes() {
-  const gov = document.getElementById('citySelect').value;
-  saveGov(gov);
-  checkRamadanBanner();
-  const coords = GOV_COORDS[gov] || GOV_COORDS.cairo;
-  const list = document.getElementById('prayerList');
-  const now = new Date();
-  const times = computePrayerTimes(coords.lat, coords.lng, now, 2); // Egypt = UTC+2 fixed, no DST
+const PRAYER_NAMES = [
+  { key:'Fajr', name:'الفجر', icon:'🌅' },
+  { key:'Dhuhr', name:'الظهر', icon:'☀️' },
+  { key:'Asr', name:'العصر', icon:'🌤️' },
+  { key:'Maghrib', name:'المغرب', icon:'🌇' },
+  { key:'Isha', name:'العشاء', icon:'🌙' }
+];
 
-  const prayers = [
-    { key:'Fajr', name:'الفجر', icon:'🌅' },
-    { key:'Dhuhr', name:'الظهر', icon:'☀️' },
-    { key:'Asr', name:'العصر', icon:'🌤️' },
-    { key:'Maghrib', name:'المغرب', icon:'🌇' },
-    { key:'Isha', name:'العشاء', icon:'🌙' }
-  ];
+function renderPrayerList(times, now) {
+  const list = document.getElementById('prayerList');
   list.innerHTML = '';
   allPrayerTimes = [];
-  prayers.forEach(p => {
+  PRAYER_NAMES.forEach(p => {
     const pTime = hoursToDate(now, times[p.key]);
     allPrayerTimes.push({ name: p.name, time: pTime });
     const row = document.createElement('div');
@@ -965,6 +979,45 @@ function loadPrayerTimes() {
   if (!window.__reminderTicking) {
     window.__reminderTicking = true;
     setInterval(updatePrayerCountdown, 15000);
+  }
+}
+
+function setSyncStatus(online, text) {
+  const el = document.getElementById('prayerSyncStatus');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle('online', online);
+}
+
+/* Tries a real internet sync with Aladhan's API first (now that the app is on
+   real hosting, not the sandboxed Artifact, this actually works). Falls back
+   silently to the offline local calculation if there's no internet or the
+   request fails, so the app never breaks either way. */
+async function loadPrayerTimes() {
+  const gov = document.getElementById('citySelect').value;
+  saveGov(gov);
+  checkRamadanBanner();
+  const coords = GOV_COORDS[gov] || GOV_COORDS.cairo;
+  const now = new Date();
+
+  setSyncStatus(false, '🔄 جاري المزامنة مع الإنترنت...');
+  try {
+    const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${coords.lat}&longitude=${coords.lng}&method=5`, { cache: 'no-store' });
+    if (!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    const t = data.data.timings;
+    const times = {};
+    PRAYER_NAMES.forEach(p => {
+      const [h, m] = t[p.key].split(' ')[0].split(':').map(Number);
+      times[p.key] = h + m / 60;
+    });
+    renderPrayerList(times, now);
+    const nowStr = to12h(now.getHours(), now.getMinutes());
+    setSyncStatus(true, `✅ متزامن مع الإنترنت — آخر مزامنة ${nowStr}`);
+  } catch (e) {
+    const times = computePrayerTimes(coords.lat, coords.lng, now, 2); // Egypt = UTC+2 fixed, no DST
+    renderPrayerList(times, now);
+    setSyncStatus(false, '📴 تعذّرت المزامنة، بيتم الحساب محليًا بدون إنترنت');
   }
 }
 
@@ -1047,6 +1100,66 @@ function calcZakat() {
   }
 }
 function formatMoney(n) { return Math.round(n).toLocaleString('en-US'); }
+
+/* ---------- LIVE GOLD PRICE SYNC (for Zakat nisab) ---------- */
+/* Fetches a live international gold spot price + USD/EGP exchange rate, then
+   derives an estimated 21k-gram price in EGP. This is an estimate based on
+   the global spot price, not an official Egyptian jewelry-market quote (which
+   includes manufacturing/workmanship fees on top), so treat it as a helpful
+   suggestion rather than an exact number — we show it as a suggestion the
+   user can apply, never silently overwrite their own nisab value. */
+function getGoldCache() {
+  try { return JSON.parse(localStorage.getItem('goldPriceCache') || 'null'); } catch(e) { return null; }
+}
+function setGoldCache(data) {
+  try { localStorage.setItem('goldPriceCache', JSON.stringify(data)); } catch(e) {}
+}
+async function syncGoldPrice(manual) {
+  const textEl = document.getElementById('goldSyncText');
+  if (!textEl) return;
+  if (manual) textEl.textContent = '🔄 جاري تحديث سعر الذهب...';
+  try {
+    const [goldRes, fxRes] = await Promise.all([
+      fetch('https://api.gold-api.com/price/XAU', { cache: 'no-store' }),
+      fetch('https://open.er-api.com/v6/latest/USD', { cache: 'no-store' })
+    ]);
+    if (!goldRes.ok || !fxRes.ok) throw new Error('bad response');
+    const goldData = await goldRes.json();
+    const fxData = await fxRes.json();
+    const usdPerOunce = goldData.price;
+    const usdToEgp = fxData.rates.EGP;
+    if (!usdPerOunce || !usdToEgp) throw new Error('missing data');
+
+    const gram24kUsd = usdPerOunce / 31.1035;
+    const gram21kUsd = gram24kUsd * (21 / 24);
+    const gram21kEgp = gram21kUsd * usdToEgp;
+    const nisabEgp = gram21kEgp * 85;
+
+    setGoldCache({ gram21kEgp, nisabEgp, ts: Date.now() });
+    renderGoldSyncUI({ gram21kEgp, nisabEgp, ts: Date.now() });
+  } catch (e) {
+    const cache = getGoldCache();
+    if (cache) {
+      renderGoldSyncUI(cache, true);
+    } else {
+      textEl.textContent = '📴 تعذّر جلب سعر الذهب الحالي (لا يوجد اتصال بالإنترنت)، استخدم آخر رقم مدخل يدويًا.';
+    }
+  }
+}
+function renderGoldSyncUI(cache, stale) {
+  const textEl = document.getElementById('goldSyncText');
+  if (!textEl) return;
+  const d = new Date(cache.ts);
+  const timeStr = `${d.toLocaleDateString('ar-EG')} ${to12h(d.getHours(), d.getMinutes())}`;
+  const freshness = stale ? '⚠️ (آخر سعر محفوظ، تعذّر التحديث الآن)' : '✅';
+  textEl.innerHTML = `${freshness} سعر الجرام عيار 21 تقريبًا: <b>${formatMoney(cache.gram21kEgp)} ج.م</b> — النصاب المقترح: <b>${formatMoney(cache.nisabEgp)} ج.م</b><br><span style="opacity:.75;font-weight:500;">آخر تحديث: ${timeStr} — ده تقدير من السعر العالمي، وممكن يختلف شوية عن سعر الصاغة المحلي</span>`;
+}
+function applySuggestedNisab() {
+  const cache = getGoldCache();
+  if (!cache) return;
+  document.getElementById('zNisab').value = Math.round(cache.nisabEgp);
+  calcZakat();
+}
 
 /* ---------- INSTALLMENT ---------- */
 function calcInstallment() {
@@ -1417,6 +1530,17 @@ function locateQibla() {
     { enableHighAccuracy: true, timeout: 10000 }
   );
 }
+function populateCompassTicks() {
+  const ticks = document.getElementById('compassTicks');
+  if (!ticks || ticks.dataset.built) return;
+  ticks.dataset.built = '1';
+  let html = '';
+  for (let deg = 0; deg < 360; deg += 30) {
+    html += `<div class="compass-tick" style="transform:rotate(${deg}deg) translate(0,-92px) rotate(${-deg}deg);">${deg}°</div>`;
+  }
+  ticks.innerHTML = html;
+}
+
 function enableLiveCompass() {
   const handleOrientation = (event) => {
     let heading;
@@ -1449,6 +1573,21 @@ function enableLiveCompass() {
 document.getElementById('citySelect').value = getSavedGov();
 checkRamadanBanner();
 calcZakat();
+populateCompassTicks();
+
+/* Request notification permission as early as possible now that we're on a
+   real site (this prompt is reliable here, unlike inside the old sandboxed
+   Artifact preview). */
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+
+/* Initial + periodic real-internet syncs. Both silently fall back to the
+   offline/local/cached value if there's no connection, so nothing ever breaks. */
+loadPrayerTimes();
+syncGoldPrice(false);
+setInterval(loadPrayerTimes, 3 * 60 * 60 * 1000);   // re-sync prayer times every 3 hours
+setInterval(() => syncGoldPrice(false), 6 * 60 * 60 * 1000); // re-sync gold price every 6 hours
 </script>
 </body>
 </html>
