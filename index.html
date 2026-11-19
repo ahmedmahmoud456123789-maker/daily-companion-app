@@ -789,6 +789,7 @@
           <div class="qibla-distance" id="qiblaDistance"></div>
           <div class="live-heading" id="liveHeadingText" style="display:none;"></div>
           <button class="btn-live" id="liveCompassBtn" onclick="enableLiveCompass()">🧭 تفعيل البوصلة الحية (تجريبي)</button>
+          <button class="btn-live" id="flipCompassBtn" onclick="toggleCompassFlip()" style="display:none;">🔄 البوصلة بتتحرك غلط؟ اعكسها</button>
           <p class="qibla-note">لو فعّلت البوصلة الحية: لِف بجسمك ببطء لحد ما يبقى السهم مشاور لفوق تمامًا، وده محتاج معايرة بوصلة جهازك عشان يبقى دقيق. ولو مش عايز تستخدمها، السهم بيوضّحلك أصلًا زاوية اتجاه القبلة من الشمال الجغرافي، وتقدر تستخدمها مع أي بوصلة تانية.</p>
         </div>
       </div>
@@ -1522,9 +1523,35 @@ function locateQibla() {
     { enableHighAccuracy: true, timeout: 10000 }
   );
 }
+/* Different phones/browsers report compass heading with inconsistent sign
+   conventions (a known, long-standing inconsistency with the DeviceOrientation
+   API across devices) — there's no reliable way to know in advance which way
+   a given phone will report it, so instead of guessing, we let the user flip
+   it with one tap if the needle visibly moves the wrong way. */
+let compassFlipped = false;
+try { compassFlipped = localStorage.getItem('compassFlipped') === '1'; } catch(e) {}
+let lastHeadingValue = null;
+function toggleCompassFlip() {
+  compassFlipped = !compassFlipped;
+  try { localStorage.setItem('compassFlipped', compassFlipped ? '1' : '0'); } catch(e) {}
+  document.getElementById('flipCompassBtn').textContent = compassFlipped ? '✅ تم عكس الاتجاه' : '🔄 البوصلة بتتحرك غلط؟ اعكسها';
+  if (lastHeadingValue !== null) updateNeedleAndText(lastHeadingValue);
+}
+function updateNeedleAndText(heading) {
+  if (qiblaBearingValue === null) return;
+  const rotation = compassFlipped
+    ? (heading - qiblaBearingValue + 360) % 360
+    : (qiblaBearingValue - heading + 360) % 360;
+  document.getElementById('qiblaNeedle').style.transform = `translate(-50%,-100%) rotate(${rotation}deg)`;
+  const headingEl = document.getElementById('liveHeadingText');
+  const rounded = Math.round(heading) % 360;
+  const aligned = rotation < 8 || rotation > 352;
+  headingEl.style.display = 'block';
+  headingEl.textContent = `${aligned ? '✅' : '🧭'} جهازك متجه الآن ناحية ${rounded}° ${aligned ? '— ده اتجاه القبلة بالظبط!' : ''}`;
+}
+
 function enableLiveCompass() {
   let lastUpdate = 0;
-  const headingEl = document.getElementById('liveHeadingText');
   const handleOrientation = (event) => {
     let heading;
     if (typeof event.webkitCompassHeading === 'number') {
@@ -1534,25 +1561,20 @@ function enableLiveCompass() {
     } else {
       return;
     }
-    if (qiblaBearingValue === null) return;
-    const rotation = (qiblaBearingValue - heading + 360) % 360;
-    document.getElementById('qiblaNeedle').style.transform = `translate(-50%,-100%) rotate(${rotation}deg)`;
-
-    // Throttle the text update (orientation events can fire many times a
-    // second) so the number stays readable instead of flickering.
+    lastHeadingValue = heading;
     const now = Date.now();
-    if (now - lastUpdate > 200) {
+    if (now - lastUpdate > 200) { // throttle: orientation events fire very fast
       lastUpdate = now;
-      const rounded = Math.round(heading) % 360;
-      const aligned = rotation < 8 || rotation > 352;
-      headingEl.style.display = 'block';
-      headingEl.textContent = `${aligned ? '✅' : '🧭'} جهازك متجه الآن ناحية ${rounded}° ${aligned ? '— ده اتجاه القبلة بالظبط!' : ''}`;
+      updateNeedleAndText(heading);
     }
   };
   const start = () => {
     window.addEventListener('deviceorientationabsolute', handleOrientation, true);
     window.addEventListener('deviceorientation', handleOrientation, true);
     document.getElementById('liveCompassBtn').textContent = '✅ البوصلة الحية شغالة';
+    const flipBtn = document.getElementById('flipCompassBtn');
+    flipBtn.style.display = 'inline-block';
+    flipBtn.textContent = compassFlipped ? '✅ تم عكس الاتجاه' : '🔄 البوصلة بتتحرك غلط؟ اعكسها';
   };
   if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
     DeviceOrientationEvent.requestPermission().then(state => {
