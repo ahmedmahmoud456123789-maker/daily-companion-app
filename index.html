@@ -704,7 +704,7 @@
           </div>
 
           <button class="btn btn-purple" onclick="unlockAI()">اشترك الآن بـ ٩٩ ج.م</button>
-          <p class="pay-note">⚠️ هذا نموذج أولي: شاشة الدفع هنا للعرض فقط ولا تخصم أي مبلغ فعليًا. لتفعيل دفع حقيقي، التطبيق يحتاج ربط ببوابة دفع مصرية (مثل Paymob أو Fawry) من خلال سيرفر خلفي (Backend) يتحقق من الاشتراك بأمان.</p>
+          <p class="pay-note">🔒 الدفع آمن ومُشفّر بالكامل عبر Paymob، ويشمل البطاقات البنكية (فيزا/ماستركارد). الاشتراك يتجدد شهريًا.</p>
         </div>
 
         <!-- Unlocked content (hidden by default) -->
@@ -908,6 +908,7 @@ function nav(screen) {
   }
   if (screen === 'adhkar' && !window.__adhkarLoaded) { adhkarTab('sabah', document.querySelector('.adhkar-tab')); window.__adhkarLoaded = true; }
   if (screen === 'calendar' && !window.__calLoaded) { renderCalendar(); window.__calLoaded = true; }
+  if (screen === 'ai') { checkSubscriptionStatus(); }
 }
 
 /* ---------- PRAYER TIMES ---------- */
@@ -1238,7 +1239,8 @@ function calcInstallment() {
   `;
 }
 
-/* ---------- AI ASSISTANT (demo) ---------- */
+/* ---------- AI ASSISTANT (real subscription via Paymob) ---------- */
+const PAYMENT_API_BASE = 'https://daily-companion-paymob.ahmedmahmoud456123789.workers.dev';
 let aiUnlocked = false;
 let selectedPayMethod = 'card';
 function selectPayMethod(el) {
@@ -1246,15 +1248,58 @@ function selectPayMethod(el) {
   el.classList.add('active');
   selectedPayMethod = el.dataset.m;
 }
-function unlockAI() {
-  // DEMO ONLY — NOT A REAL CHARGE.
-  // This screen only simulates the checkout UI (card / Vodafone Cash / Fawry).
-  // A real subscription needs: a backend server, a merchant account with an Egyptian
-  // payment gateway (e.g. Paymob, Fawry Pay), and server-side verification of the
-  // payment/webhook before unlocking the AI features for that user's account.
-  aiUnlocked = true;
-  document.getElementById('aiPaywall').style.display = 'none';
-  document.getElementById('aiContent').style.display = 'block';
+
+function getUserId() {
+  let id = null;
+  try { id = localStorage.getItem('dc_user_id'); } catch(e) {}
+  if (!id) {
+    id = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    try { localStorage.setItem('dc_user_id', id); } catch(e) {}
+  }
+  return id;
+}
+
+async function checkSubscriptionStatus() {
+  const btn = document.querySelector('#aiPaywall .btn-purple');
+  try {
+    const userId = getUserId();
+    const res = await fetch(`${PAYMENT_API_BASE}/check-subscription?userId=${encodeURIComponent(userId)}`, { cache: 'no-store' });
+    const data = await res.json();
+    if (data.isActive) {
+      aiUnlocked = true;
+      document.getElementById('aiPaywall').style.display = 'none';
+      document.getElementById('aiContent').style.display = 'block';
+    } else {
+      aiUnlocked = false;
+      document.getElementById('aiPaywall').style.display = 'block';
+      document.getElementById('aiContent').style.display = 'none';
+    }
+  } catch (e) {
+    // couldn't reach the server — leave the paywall as-is, don't block the user
+  }
+}
+
+async function unlockAI() {
+  const btn = document.querySelector('#aiPaywall .btn-purple');
+  const originalText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ جاري تجهيز صفحة الدفع...'; }
+  try {
+    const userId = getUserId();
+    const res = await fetch(`${PAYMENT_API_BASE}/create-payment`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.clientSecret) {
+      throw new Error('فشل إنشاء طلب الدفع');
+    }
+    const checkoutUrl = `https://accept.paymob.com/unifiedcheckout/?publicKey=${encodeURIComponent(data.publicKey)}&clientSecret=${encodeURIComponent(data.clientSecret)}`;
+    window.location.href = checkoutUrl;
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = originalText; }
+    alert('حصل خطأ في الاتصال بصفحة الدفع، حاول تاني لو سمحت.');
+  }
 }
 
 function aiTab(which, el) {
