@@ -164,6 +164,31 @@
   .daily-tip .label { font-size:11px; opacity:.8; margin-bottom:6px; }
   .daily-tip .text { font-size:14px; line-height:1.7; font-weight:500; }
 
+  .share-btn {
+    width:100%; margin-top:18px; padding:14px; border:1.5px dashed var(--teal-400); border-radius:14px;
+    background:var(--teal-50); color:var(--teal-800); font-family:inherit; font-size:13.5px; font-weight:800; cursor:pointer;
+  }
+  .share-btn:active { background:var(--teal-100); }
+  .about-link { text-align:center; margin-top:16px; font-size:12px; color:var(--ink-soft); font-weight:700; cursor:pointer; text-decoration:underline; }
+  .about-text { font-size:14px; line-height:2; color:var(--ink); }
+  .dua-text { margin-top:16px; }
+  .maker-card {
+    margin:18px 0; text-align:center; background:var(--teal-50); border-radius:14px; padding:14px;
+  }
+  .maker-label { font-size:11px; color:var(--ink-soft); font-weight:700; margin-bottom:4px; }
+  .maker-name { font-size:15px; font-weight:900; color:var(--teal-800); letter-spacing:.3px; }
+  .whatsapp-btn {
+    display:block; text-align:center; margin-top:18px; padding:14px; border-radius:14px;
+    background:linear-gradient(135deg,#25D366,#128C7E); color:#fff; font-weight:800; font-size:13.5px;
+    text-decoration:none;
+  }
+  .share-toast {
+    position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:var(--teal-800); color:#fff;
+    padding:10px 18px; border-radius:20px; font-size:12.5px; font-weight:700; z-index:50; opacity:0; pointer-events:none;
+    transition:opacity .25s;
+  }
+  .share-toast.show { opacity:1; }
+
   /* Section header style per theme */
   .section-head { display:flex; align-items:center; gap:12px; margin:6px 0 20px; }
   .section-head .badge {
@@ -457,9 +482,42 @@
         </div>
       </div>
 
+      <button class="share-btn" onclick="shareApp()">📤 شارك التطبيق مع صحابك وعيلتك</button>
+
       <div class="daily-tip">
         <div class="label">💡 نصيحة اليوم</div>
         <div class="text">تذكّر: زكاة المال واجبة إذا بلغ المال النصاب وحال عليه الحول (سنة هجرية كاملة).</div>
+      </div>
+
+      <div class="about-link" onclick="nav('about')">ℹ️ من نحن</div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="screen" id="screen-about">
+      <div class="section-head theme-teal">
+        <div class="badge">ℹ️</div>
+        <div><h2>من نحن</h2><div class="sub">عن التطبيق</div></div>
+      </div>
+      <div class="panel">
+        <p class="about-text">
+          "رفيقي اليومي" تطبيق اتعمل بهدف بسيط: إنه يسهّل على أي حد حياته اليومية من غير تعقيد — مواقيت الصلاة، حساب الزكاة، تنظيم الأقساط، أذكار الصباح والمساء، وتسبيح إلكتروني، كل ده في مكان واحد وبشكل واضح ومناسب لكل الأعمار.
+          <br><br>
+          التطبيق لسه في بداياته وبيتطور باستمرار، وأي ملاحظة أو اقتراح منك بيساعدنا نحسّنه أكتر.
+        </p>
+
+        <div class="maker-card">
+          <div class="maker-label">صُنع بواسطة</div>
+          <div class="maker-name">AM.. Ahmed Mahmoud</div>
+        </div>
+
+        <p class="about-text dua-text">
+          وفي الختام، إن كان في هذا العمل أي نفع لحد، فمحتاج منك دعوة بظهر الغيب — لعلها تصادف ساعة استجابة تكون سببًا في رضا الله عني وعنك. 🤲<br>
+          جزاك الله خيرًا على استخدامك للتطبيق.
+        </p>
+
+        <a class="whatsapp-btn" href="https://wa.me/201210322944?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C%20%D8%B9%D9%86%D8%AF%D9%8A%20%D8%A7%D9%82%D8%AA%D8%B1%D8%A7%D8%AD%2F%D9%85%D9%84%D8%A7%D8%AD%D8%B8%D8%A9%20%D8%B9%D9%84%D9%89%20%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20%D8%B1%D9%81%D9%8A%D9%82%D9%8A%20%D8%A7%D9%84%D9%8A%D9%88%D9%85%D9%8A" target="_blank" rel="noopener">
+          📱 عندك اقتراح أو ملاحظة؟ راسلني على واتساب
+        </a>
       </div>
     </section>
 
@@ -797,6 +855,8 @@
 
   </main>
 
+  <div class="share-toast" id="shareToast"></div>
+
   <nav class="bottom-nav">
     <div class="nav-item active" id="nav-home" onclick="nav('home')">
       <span class="n-icon">🏠</span>الرئيسية
@@ -827,7 +887,8 @@ const titles = {
   tasbih: ['التسبيح الإلكتروني', 'سبّحة رقمية بعداد تلقائي'],
   adhkar: ['الأذكار والأدعية', 'صباح، مساء، وأدعية مختارة'],
   calendar: ['التقويم الهجري', 'التاريخ الهجري والميلادي'],
-  qibla: ['اتجاه القبلة', 'بوصلة تحدد اتجاه الكعبة']
+  qibla: ['اتجاه القبلة', 'بوصلة تحدد اتجاه الكعبة'],
+  about: ['من نحن', 'عن التطبيق']
 };
 
 function nav(screen) {
@@ -1589,6 +1650,30 @@ function enableLiveCompass() {
 document.getElementById('citySelect').value = getSavedGov();
 checkRamadanBanner();
 calcZakat();
+
+/* ---------- SHARE APP ---------- */
+function shareApp() {
+  const shareData = {
+    title: 'رفيقي اليومي',
+    text: 'تطبيق يجمع مواقيت الصلاة، حاسبة الزكاة، حاسبة الأقساط، الأذكار، وتسبيح إلكتروني في مكان واحد. جربه 🤍',
+    url: window.location.href
+  };
+  if (navigator.share) {
+    navigator.share(shareData).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`)
+      .then(() => showShareToast('✅ تم نسخ رابط التطبيق، شاركه مع اللي تحب!'))
+      .catch(() => showShareToast('تعذّر النسخ، انسخ الرابط من المتصفح يدويًا.'));
+  } else {
+    showShareToast('انسخ رابط الصفحة من المتصفح وشاركه.');
+  }
+}
+function showShareToast(msg) {
+  const toast = document.getElementById('shareToast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2800);
+}
 
 /* Request notification permission as early as possible now that we're on a
    real site (this prompt is reliable here, unlike inside the old sandboxed
